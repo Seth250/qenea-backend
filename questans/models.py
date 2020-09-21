@@ -2,6 +2,9 @@ from django.db import models
 from django.conf import settings
 from django.utils.text import slugify
 from django.urls import reverse
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericRelation
 
 # Create your models here.
 
@@ -16,6 +19,7 @@ class Question(models.Model):
     total_points = models.IntegerField(default=0, editable=False)
     date_posted = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
+    comments = GenericRelation(Comment)
 
     def __str__(self):
         return self.title
@@ -35,8 +39,38 @@ class Answer(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answers', 
                             related_query_name='answer')
     content = models.TextField()
+    accepted = models.BooleanField(default=False)
     upvotes = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='answer_upvotes')
     downvotes = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='answer_downvotes')
-    accepted = models.BooleanField(default=False)
-    total_points = models.IntegerField(default=0)
+    total_points = models.IntegerField(default=0, editable=False)
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
+    comments = GenericRelation(Comment)
+
+    class Meta:
+        ordering = ['-date_created']
+
+    def save(self, *args, **kwargs):
+        self.total_points = self.upvotes.count() - self.downvotes.count()
+        return super(Answer, self).save(*args, **kwargs)
+
+
+class Comment(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='comments')
+    content_type = models.ForeignKey(ContentType)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+    content = models.TextField()
+    upvotes = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='comment_upvotes')
+    downvotes = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='comment_downvotes')
+    total_points = models.IntegerField(default=0, editable=False)
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['date_created']
+
+    def save(self, *args, **kwargs):
+        self.total_points = self.upvotes.count() - self.downvotes.count()
+        return super(Comment, self).save(*args, **kwargs)
 
