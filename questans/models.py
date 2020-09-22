@@ -8,6 +8,26 @@ from django.contrib.contenttypes.fields import GenericRelation
 
 # Create your models here.
 
+class Comment(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='comments')
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+    content = models.TextField()
+    upvotes = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='comment_upvotes')
+    downvotes = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='comment_downvotes')
+    total_points = models.IntegerField(default=0, editable=False)
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['date_created']
+
+    def save(self, *args, **kwargs):
+        self.total_points = self.upvotes.count() - self.downvotes.count()
+        return super(Comment, self).save(*args, **kwargs)
+
+
 class Question(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='questions',
                             related_query_name='question')
@@ -53,24 +73,4 @@ class Answer(models.Model):
     def save(self, *args, **kwargs):
         self.total_points = self.upvotes.count() - self.downvotes.count()
         return super(Answer, self).save(*args, **kwargs)
-
-
-class Comment(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='comments')
-    content_type = models.ForeignKey(ContentType)
-    object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey('content_type', 'object_id')
-    content = models.TextField()
-    upvotes = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='comment_upvotes')
-    downvotes = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='comment_downvotes')
-    total_points = models.IntegerField(default=0, editable=False)
-    date_created = models.DateTimeField(auto_now_add=True)
-    date_updated = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        ordering = ['date_created']
-
-    def save(self, *args, **kwargs):
-        self.total_points = self.upvotes.count() - self.downvotes.count()
-        return super(Comment, self).save(*args, **kwargs)
 
