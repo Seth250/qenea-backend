@@ -23,11 +23,11 @@ class UserSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         password = data['password']
-        # since we only need one password field for User creation, we remove the second password field
+        # since we only need one password field for User creation, we can remove the second password field
         password2 = data.pop('password2')
         errors = collections.defaultdict(list)
 
-        if password1 != password2:
+        if password != password2:
             errors['password2'].append('The Two password fields do not match')
 
         try:
