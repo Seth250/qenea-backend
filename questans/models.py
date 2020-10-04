@@ -6,6 +6,8 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericRelation
 
+# considering adding saved posts to blog
+
 # Create your models here.
 
 class Comment(models.Model):

@@ -5,11 +5,14 @@ from django.contrib.auth.base_user import AbstractBaseUser
 from .managers import UserManager
 from django.utils.translation import ugettext_lazy as _
 
-# Create your models here.
+
+# Create your models here
+# maybe just use abstract user?
 
 class User(PermissionsMixin, AbstractBaseUser):
-	first_name = models.CharField(_('first name'), max_length=30)
-	last_name = models.CharField(_('last name'), max_length=30)
+	first_name = models.CharField(_('first name'), max_length=25)
+	last_name = models.CharField(_('last name'), max_length=25)
+	username = models.CharField(_('username'), max_length=25, unique=True)
 	email = models.EmailField(
 		_('email address'), 
 		unique=True, 
@@ -34,7 +37,7 @@ class User(PermissionsMixin, AbstractBaseUser):
 	objects = UserManager()
 
 	USERNAME_FIELD = 'email'
-	REQUIRED_FIELDS = ['first_name', 'last_name']
+	REQUIRED_FIELDS = ['username']
 
 	class Meta:
 		verbose_name = 'user'
