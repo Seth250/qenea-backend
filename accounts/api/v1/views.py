@@ -17,10 +17,9 @@ class UserCreateAPIView(CreateAPIView):
     def get_queryset(self):
         return get_user_model().objects.all()
 
-    def create(self, request, *args, **kwargs):
-        response = super(UserCreateAPIView, self).create(request, *args, **kwargs)
-        print(response)
-        return response
+    # def create(self, request, *args, **kwargs):
+    #     response = super(UserCreateAPIView, self).create(request, *args, **kwargs)
+    #     return response
 
 
 # class UserCreateAPIView(APIView):

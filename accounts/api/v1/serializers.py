@@ -13,7 +13,7 @@ class UserSerializer(serializers.ModelSerializer):
         write_only=True, required=True, style={'input_type': 'password', 'placeholder': 'Password'}
     )
     password2 = serializers.CharField(
-        write_only=True, required=True, style={'input_type': 'password', 'placeholder': 'Password'}
+        write_only=True, required=True, style={'input_type': 'password', 'placeholder': 'Confirm Password'}
     )
 
     class Meta:
@@ -34,7 +34,7 @@ class UserSerializer(serializers.ModelSerializer):
             password_validation.validate_password(password=password2, user=UserModel)
 
         except exceptions.ValidationError as err:
-            errors['password2'].append(*err.messages)
+            errors['password2'].extend(err.messages)
 
         if errors:
             raise serializers.ValidationError(errors)
