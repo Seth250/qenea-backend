@@ -12,7 +12,8 @@ from rest_framework.authtoken.models import Token
 
 class UserCreateAPIView(CreateAPIView):
     serializer_class = UserSerializer
-    authentication_classes = (TokenAuthentication, )
+    permission_classes = (permissions.AllowAny, ) 
+    # authentication_classes = (TokenAuthentication, )
 
     def get_queryset(self):
         return get_user_model().objects.all()

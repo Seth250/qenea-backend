@@ -78,7 +78,7 @@ class AccountsTestCase(APITestCase):
 
     def test_create_user_with_invalid_passwords(self):
         # minimum length for password is 8 characters, anything less than that should throw an error
-        self.test_user_data['password'] = self.test_user_data['password2'] = 'pass'
+        self.test_user_data['password'] = self.test_user_data['password2'] = 'passwor'
         response = self.client.post(self.create_url, data=self.test_user_data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         # using a commmon password should throw an error
@@ -87,6 +87,14 @@ class AccountsTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         # using an entirely numeric password should throw an error
         self.test_user_data['password'] = self.test_user_data['password2'] = '12345678'
+        response = self.client.post(self.create_url, data=self.test_user_data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        # using a password with only letters should throw an error
+        self.test_user_data['password'] = self.test_user_data['password2'] = 'sasageyo'
+        response = self.client.post(self.create_url, data=self.test_user_data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        # using a password with less than three digits should throw an error
+        self.test_user_data['password'] = self.test_user_data['password2'] = 'test_password00'
         response = self.client.post(self.create_url, data=self.test_user_data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
