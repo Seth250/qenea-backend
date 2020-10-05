@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from django.contrib.auth import password_validation
-from django.core import exceptions, validators
+from django.contrib.auth import password_validation as validators
+from django.core import exceptions
 import collections
 
 
@@ -31,7 +31,7 @@ class UserSerializer(serializers.ModelSerializer):
             errors['password2'].append('The Two password fields do not match')
 
         try:
-            password_validation.validate_password(password=password2, user=UserModel)
+            validators.validate_password(password=password2, user=UserModel)
 
         except exceptions.ValidationError as err:
             errors['password2'].extend(err.messages)

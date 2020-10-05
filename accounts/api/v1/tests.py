@@ -13,7 +13,7 @@ class AccountsTestCase(APITestCase):
         self.test_username = 'test-user'
         self.test_first_name = 'eren'
         self.test_last_name = 'yeager'
-        self.test_password = 'test_user_password' 
+        self.test_password = 'test_password001' 
         self.create_url = api_reverse('Accounts-API:user_signup')
 
         self.test_user_data = {
@@ -76,11 +76,17 @@ class AccountsTestCase(APITestCase):
         response = self.client.post(self.create_url, data=self.test_user_data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_create_user_with_existing_username(self):
-        self.client.post(self.create_url, data=self.test_user_data)
-        # replacing the email so it doesn't throw an error for the email field
-        self.test_user_data['email'] = 'another-test-email@django.com'
-        # post request with an already existing username should throw an error
+    def test_create_user_with_invalid_passwords(self):
+        # minimum length for password is 8 characters, anything less than that should throw an error
+        self.test_user_data['password'] = self.test_user_data['password2'] = 'pass'
+        response = self.client.post(self.create_url, data=self.test_user_data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        # using a commmon password should throw an error
+        self.test_user_data['password'] = self.test_user_data['password2'] = 'password'
+        response = self.client.post(self.create_url, data=self.test_user_data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        # using an entirely numeric password should throw an error
+        self.test_user_data['password'] = self.test_user_data['password2'] = '12345678'
         response = self.client.post(self.create_url, data=self.test_user_data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -89,14 +95,11 @@ class AccountsTestCase(APITestCase):
         response = self.client.post(self.create_url, data=self.test_user_data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_create_user_with_invalid_passwords(self):
-        # minimum length for a password is 8 characters, anything less than that should throw an error
-        self.test_user_data['password'] = self.test_user_data['password2'] = 'pass'
-        response = self.client.post(self.create_url, data=self.test_user_data)
-        print(response.data)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        # post request with a commmon password should throw an error
-        self.test_user_data['password'] = self.test_user_data['password2'] = 'password'
+    def test_create_user_with_existing_username(self):
+        self.client.post(self.create_url, data=self.test_user_data)
+        # replacing the email so it doesn't throw an error for the email field
+        self.test_user_data['email'] = 'another-test-email@django.com'
+        # using an already existing username should throw an error
         response = self.client.post(self.create_url, data=self.test_user_data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -104,6 +107,6 @@ class AccountsTestCase(APITestCase):
         self.client.post(self.create_url, data=self.test_user_data)
         # replacing the username so it doesn't throw an error for the username field
         self.test_user_data['username'] = 'another-test-user'
-        # post request with an already existing email should throw an error
+        # using an already existing email should throw an error
         response = self.client.post(self.create_url, data=self.test_user_data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

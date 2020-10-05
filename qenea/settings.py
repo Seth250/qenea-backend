@@ -118,6 +118,10 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
+    # our custom password validators
+    {
+        'NAME': 'accounts.validators.NumberDigitsPasswordValidator', 'OPTIONS': {'min_digits': 3}
+    }
 ]
 
 AUTH_USER_MODEL = 'accounts.User'
