@@ -11,41 +11,16 @@ from django.contrib.auth import get_user_model
 
 class UserCreateAPIView(CreateAPIView):
     serializer_class = UserSerializer
-    permission_classes = (permissions.AllowAny, ) 
+    permission_classes = (permissions.AllowAny, )
     # authentication_classes = (TokenAuthentication, )
 
     def get_queryset(self):
         return get_user_model().objects.all()
 
-    # def create(self, request, *args, **kwargs):
-    #     response = super(UserCreateAPIView, self).create(request, *args, **kwargs)
-    #     return response
-
 
 class UserListRetrieveViewSet(ReadOnlyModelViewSet):
     serializer_class = UserSerializer
-    # permission_classes = (permissions.IsAuthenticated, )
+    permission_classes = (permissions.IsAdminUser, )
 
     def get_queryset(self):
         return get_user_model().objects.all()
-
-
-# class UserCreateAPIView(APIView):
-
-#     def post(self, request, *args, **kwargs):
-#         serializer = UserSerializer(data=request.data)
-#         return Response(serializer.data)
-
-
-
-# def post(self, request, format='json'):
-#     serializer = UserSerializer(data=request.data)
-#     if serializer.is_valid():
-#         user = serializer.save()
-#         if user:
-#             token = Token.objects.create(user=user)
-#             json = serializer.data
-#             json['token'] = token.key
-#             return Response(json, status=status.HTTP_201_CREATED)
-
-#     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
