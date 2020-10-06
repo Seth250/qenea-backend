@@ -1,13 +1,12 @@
-from rest_framework.response import Response
-from rest_framework import mixins
-# from rest_framework.viewsets import GenericViewSet
-from rest_framework.views import APIView
+# from rest_framework.response import Response
+# from rest_framework import mixins
+# from rest_framework.views import APIView
+from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework.generics import CreateAPIView
 from rest_framework import permissions
 from rest_framework.authentication import TokenAuthentication
 from .serializers import UserSerializer
 from django.contrib.auth import get_user_model
-from rest_framework.authtoken.models import Token
 
 
 class UserCreateAPIView(CreateAPIView):
@@ -21,6 +20,14 @@ class UserCreateAPIView(CreateAPIView):
     # def create(self, request, *args, **kwargs):
     #     response = super(UserCreateAPIView, self).create(request, *args, **kwargs)
     #     return response
+
+
+class UserListRetrieveViewSet(ReadOnlyModelViewSet):
+    serializer_class = UserSerializer
+    # permission_classes = (permissions.IsAuthenticated, )
+
+    def get_queryset(self):
+        return get_user_model().objects.all()
 
 
 # class UserCreateAPIView(APIView):

@@ -3,11 +3,10 @@ from django.core.mail import send_mail
 from django.contrib.auth.models import PermissionsMixin
 from django.contrib.auth.base_user import AbstractBaseUser
 from .managers import UserManager
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 
 # Create your models here
-# maybe just use abstract user?
 
 class User(PermissionsMixin, AbstractBaseUser):
 	first_name = models.CharField(_('first name'), max_length=25)
