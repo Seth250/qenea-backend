@@ -6,7 +6,6 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericRelation
 
-# considering adding saved posts to blog
 
 # Create your models here.
 
@@ -31,28 +30,30 @@ class Comment(models.Model):
 
 
 class Question(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='questions',
-                            related_query_name='question')
-    title = models.CharField(max_length=150)
-    slug = models.CharField(default='', max_length=150, editable=False)
-    description = models.TextField()
-    upvotes = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='question_upvotes')
-    downvotes = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='question_downvotes')
-    total_points = models.IntegerField(default=0, editable=False)
-    date_posted = models.DateTimeField(auto_now_add=True)
-    date_updated = models.DateTimeField(auto_now=True)
-    comments = GenericRelation(Comment)
+	user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='questions',
+							related_query_name='question')
+	title = models.CharField(max_length=150)
+	slug = models.CharField(default='', max_length=150, editable=False)
+	description = models.TextField()
+	upvotes = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='question_upvotes')
+	downvotes = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='question_downvotes')
+	total_points = models.IntegerField(default=0, editable=False)
+	date_posted = models.DateTimeField(auto_now_add=True)
+	date_updated = models.DateTimeField(auto_now=True)
+	comments = GenericRelation(Comment)
 
-    def __str__(self):
-        return self.title
+	def __str__(self):
+		return self.title
 
-    def save(self, *args, **kwargs):
-        self.slug = slugify(self.title, allow_unicode=True)
-        self.total_points = self.upvotes.count() - self.downvotes.count()
-        return super(Question, self).save(*args, **kwargs)
+	def save(self, *args, **kwargs):
+		if self.id:
+			self.total_points = self.upvotes.count() - self.downvotes.count()
 
-    def get_absolute_url(self):
-        return reverse('question_detail', kwargs={'pk': self.pk, 'slug': self.slug})
+		self.slug = slugify(self.title, allow_unicode=True)
+		return super(Question, self).save(*args, **kwargs)
+
+	def get_absolute_url(self):
+		return reverse('question_detail', kwargs={'pk': self.pk, 'slug': self.slug})
 
 
 class Answer(models.Model):
