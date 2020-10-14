@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.reverse import reverse as api_reverse
 
 
-class AccountsTestCase(APITestCase):
+class AccountsAPITestCase(APITestCase):
 
     def setUp(self):
         self.user_model = get_user_model()
