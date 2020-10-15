@@ -19,7 +19,7 @@ class CustomModelPermissions(permissions.BasePermission):
 		# if request.method in permissions.SAFE_METHODS:
 		# 	return True
 
-		if view.action in ('retrieve', 'update', 'destroy'):
+		if view.action in ('update', 'partial_update', 'destroy'):
 			return obj.user == request.user or request.user.is_superuser
 
 		return True

@@ -41,11 +41,11 @@ class AccountsAPITestCase(APITestCase):
 
     def test_create_superuser(self):
         self.user_model.objects.create_superuser(**self.test_create_superuser_data)
-        super_user = self.user_model.objects.get(email=self.test_email)
-        self.assertEqual(super_user.email, self.test_email)
-        self.assertEqual(super_user.username, self.test_username)
-        self.assertTrue(super_user.is_staff)
-        self.assertTrue(super_user.is_superuser)
+        test_superuser = self.user_model.objects.get(email=self.test_email)
+        self.assertEqual(test_superuser.email, self.test_email)
+        self.assertEqual(test_superuser.username, self.test_username)
+        self.assertTrue(test_superuser.is_staff)
+        self.assertTrue(test_superuser.is_superuser)
 
     def test_create_user(self):
         response = self.client.post(path=self.create_url, data=self.test_create_user_data)
@@ -196,7 +196,9 @@ class AccountsAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_user_detail(self):
-        # creating a superuser
+        # creating a superuser for two reasons (1. so that the detail of a user exists because by default, there are
+		# no users in the test db; and 2. so that we can use the token to access that detail of the user because only
+		# admin/superusers can access user detail)
         super_user = self.user_model.objects.create_superuser(**self.test_create_superuser_data)
         # user auth token acquisition
         response = self.client.post(path=self.auth_token_url, data=self.test_auth_data)
@@ -220,7 +222,7 @@ class AccountsAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_user_detail_with_normal_user(self):
-        # creating a normal user
+        # creating a user
         response = self.client.post(path=self.create_url, data=self.test_create_user_data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)        
         # user auth token acquisition
