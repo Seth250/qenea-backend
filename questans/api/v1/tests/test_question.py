@@ -98,12 +98,20 @@ class QuestionAPITestCase(APITestCase):
 		self.test_question_data['title'] = ''
 		response = self.client.post(path=self.question_list_create_url, data=self.test_question_data)
 		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+		# testing question creation with no title field
+		self.test_question_data.pop('title')
+		response = self.client.post(path=self.question_list_create_url, data=self.test_question_data)
+		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 	def test_create_question_with_invalid_description(self):
 		# passing user token
 		self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.test_user_token}")
 		# testing question creation with empty description 
 		self.test_question_data['description'] = ''
+		response = self.client.post(path=self.question_list_create_url, data=self.test_question_data)
+		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+		# testing question creation with no description field
+		self.test_question_data.pop('description')
 		response = self.client.post(path=self.question_list_create_url, data=self.test_question_data)
 		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -117,8 +125,8 @@ class QuestionAPITestCase(APITestCase):
 		response = self.client.post(path=self.question_list_create_url, data=self.test_question_data)
 		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 		# testing question detail
-		question_detail_uri = response.data['uri']
-		response = self.client.get(path=question_detail_uri)
+		question_detail_url = response.data['url']
+		response = self.client.get(path=question_detail_url)
 		self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 	def test_question_detail_with_unauthenticated_user(self):
@@ -134,27 +142,35 @@ class QuestionAPITestCase(APITestCase):
 		# creating a question
 		response = self.client.post(path=self.question_list_create_url, data=self.test_question_data)
 		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-		question_detail_uri = response.data['uri']
-		# changing question title
+		question_detail_url = response.data['url']
+		# testing question title update
 		self.test_question_data['title'] = 'Updated title'
-		# testing question update
-		response = self.client.put(path=question_detail_uri, data=self.test_question_data)
+		response = self.client.put(path=question_detail_url, data=self.test_question_data)
 		self.assertEqual(response.status_code, status.HTTP_200_OK)
-		# changing question description
+		# testing question description update
 		self.test_question_data['description'] = 'An Updated description'
-		response = self.client.put(path=question_detail_uri, data=self.test_question_data)
+		response = self.client.put(path=question_detail_url, data=self.test_question_data)
 		self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+	def test_question_update_with_unauthenticated_user(self):
+		# testing question title update without authentication (using the question we created in setUp)
+		self.test_question_data['title'] = 'Such an Updated Question Title'
+		response = self.client.put(path=self.test_question_detail_url, data=self.test_question_data)
+		self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+		# testing question description update without authentication (using the question we created in setUp)
+		self.test_question_data['description'] = 'An Updated Question Description'
+		response = self.client.put(path=self.test_question_detail_url, data=self.test_question_data)
+		self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)		
 
 	def test_question_update_with_prohibited_user(self):
 		# passing user token
 		self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.test_user_token}")
-		 # changing question title
+		# testing question title update for the question that we created in setUp
 		self.test_question_data['title'] = 'An Updated Question Title'
-		# testing question update for the question that we created in setUp
 		response = self.client.put(path=self.test_question_detail_url, data=self.test_question_data)
 		# an error would occur because only the object owner or superusers are allowed to update questions
 		self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-		# changing question description
+		# testing question description update for the question that we created in setUp
 		self.test_question_data['description'] = 'An Updated Question Description'
 		response = self.client.put(path=self.test_question_detail_url, data=self.test_question_data)
 		self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
@@ -165,18 +181,17 @@ class QuestionAPITestCase(APITestCase):
 		# creating a question
 		response = self.client.post(path=self.question_list_create_url, data=self.test_question_data)
 		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-		question_detail_uri = response.data['uri']
+		question_detail_url = response.data['url']
 		# changing the token to the superuser's token so that we can authenticate as the superuser
 		self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.test_superuser_token}")
-		# changing question title
+		# testing question title update
 		self.test_question_data['title'] = 'Do you hate me?'
-		# testing question update
-		response = self.client.put(path=question_detail_uri, data=self.test_question_data)
+		response = self.client.put(path=question_detail_url, data=self.test_question_data)
 		# superusers are allowed to update questions even if they are not the owners
 		self.assertEqual(response.status_code, status.HTTP_200_OK)
-		# changing question description
+		# testing question description update
 		self.test_question_data['description'] = 'My Pain is far greater than Yours!'
-		response = self.client.put(path=question_detail_uri, data=self.test_question_data)
+		response = self.client.put(path=question_detail_url, data=self.test_question_data)
 		self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 	def test_question_update_with_invalid_title(self):
@@ -185,15 +200,42 @@ class QuestionAPITestCase(APITestCase):
 		# creating a question
 		response = self.client.post(path=self.question_list_create_url, data=self.test_question_data)
 		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-		question_detail_uri = response.data['uri']
+		question_detail_url = response.data['url']
 		# testing question update with empty title
 		self.test_question_data['title'] = ''
-		response = self.client.put(path=question_detail_uri, data=self.test_question_data)
+		response = self.client.put(path=question_detail_url, data=self.test_question_data)
 		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-		# removing title from question data
-		self.test_question_data.pop('title')
 		# testing question update with no title field
-		response = self.client.put(path=question_detail_uri, data=self.test_question_data)
+		self.test_question_data.pop('title')
+		response = self.client.put(path=question_detail_url, data=self.test_question_data)
 		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+	def test_question_update_with_invalid_description(self):
+		# passing user token
+		self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.test_user_token}")
+		# creating a question
+		response = self.client.post(path=self.question_list_create_url, data=self.test_question_data)
+		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+		question_detail_url = response.data['url']
+		# testing question update with empty description
+		self.test_question_data['description'] = ''
+		response = self.client.put(path=question_detail_url, data=self.test_question_data)
+		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+		# testing question update with no description field
+		self.test_question_data.pop('description')
+		response = self.client.put(path=question_detail_url, data=self.test_question_data)
+		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+	def test_question_partial_update_with_title(self):
+		# passing user token
+		self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.test_user_token}")
+		# creating a question
+		response = self.client.post(path=self.question_list_create_url, data=self.test_question_data)
+		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+		question_detail_url = response.data['url']
+		# removing description field
+		self.test_question_data.pop('description')
+		# testing question partial update with title
+		self.test_question_data['title'] = 'Updated title with Patch'
+		response = self.client.patch(path=question_detail_url, data=self.test_question_data)
+		self.assertEqual(response.status_code, status.HTTP_200_OK)			
