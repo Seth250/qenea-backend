@@ -8,7 +8,7 @@ verify_ssl = true
 [packages]
 django = "==3.0.7"
 djangorestframework = "*"
-django-rest-swagger = "*"
+drf-yasg2 = {extras = ["validation"],version = "*"}
 
 [requires]
 python_version = "3.7"
