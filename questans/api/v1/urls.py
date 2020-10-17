@@ -5,7 +5,8 @@ from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
 router.register(r'questions', QuestionViewSet, basename='question')
-router.register(r'questions/(?P<slug>[^/.]+)/answers', AnswerViewSet, basename='answer')
+# router.register(r'questions/(?P<slug>[^/.]+)/answers', AnswerViewSet, basename='answer')
+router.register(r'answers', AnswerViewSet, basename='answer')
 
 app_name = 'Questions-API'
 

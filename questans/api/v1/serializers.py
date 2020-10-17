@@ -52,5 +52,3 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
 			'comments', 'date_posted'
 		)
 		read_only_fields = ('id', 'upvotes', 'downvotes', 'date_posted')
-
-
