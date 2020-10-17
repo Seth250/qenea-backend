@@ -5,8 +5,8 @@ class CustomModelPermissions(permissions.BasePermission):
 	"""
 	Custom permissions for different actions
 	"""
-	# has_permission refers to permissions that don't involve only a single object e.g list, create 
-	# while has_object_permission refers to permissions pertaining to a single object e.g retrieve, update, delete
+	# has_permission - permissions that don't involve only a single object e.g list, create 
+	# has_object_permission - permissions pertaining to a single object e.g retrieve, update, delete
 	def has_permission(self, request, view):
 		if view.action == 'create':
 			return request.user.is_authenticated

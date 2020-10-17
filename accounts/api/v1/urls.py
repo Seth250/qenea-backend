@@ -5,7 +5,7 @@ from rest_framework.routers import DefaultRouter
 
 
 router = DefaultRouter()
-router.register('users', UserListRetrieveViewSet, basename='user')
+router.register(r'users', UserListRetrieveViewSet, basename='user')
 
 app_name = 'Accounts-API'
 
