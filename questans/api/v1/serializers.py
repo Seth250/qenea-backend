@@ -1,31 +1,42 @@
 from rest_framework import serializers
 from questans.models import Question, Answer, Comment
 from rest_framework.reverse import reverse as api_reverse
+from django.contrib.contenttypes.models import ContentType
 
 
-class CommentObjectRelatedField(serializers.RelatedField):
-	"""
-	A custom field to use for the `comment_object` generic relationship.
-	"""
-	def to_representation(self, value):
-		if isinstance(value, Question):
-			return f'Question: {value.id}'
+class ContentTypeRelatedField(serializers.RelatedField):
 
-		elif isinstance(value, Answer):
-			return f'Answer: {value.id}'
-		
-		raise Exception('Unexpected type of comment object')
+	def to_representation(self, obj):
+		return obj.model
+
+	def to_internal_value(self, data):
+		return ContentType.objects.get(model=data)
+
+
+class CommentSerializer(serializers.HyperlinkedModelSerializer):
+	url = serializers.HyperlinkedIdentityField(view_name='Questans-API:comment-detail')
+	user = serializers.PrimaryKeyRelatedField(read_only=True)
+	# content_type = serializers.SlugRelatedField(queryset=ContentType.objects.all(), slug_field='model')
+	content_type = ContentTypeRelatedField(queryset=ContentType.objects.all())
+
+	class Meta:
+		model = Comment
+		fields = (
+			'id', 'url', 'user', 'content', 'content_type', 'object_id', 'upvotes', 'downvotes', 'total_points', 
+			'date_created'
+		)
+		read_only_fields = ('id', 'user', 'upvotes', 'downvotes')
 
 
 class AnswerSerializer(serializers.HyperlinkedModelSerializer):
-	url = serializers.HyperlinkedIdentityField(view_name='Questions-API:answer-detail')
+	url = serializers.HyperlinkedIdentityField(view_name='Questans-API:answer-detail')
 	user = serializers.PrimaryKeyRelatedField(read_only=True)
-	comments = CommentObjectRelatedField(many=True, read_only=True)
 	question = serializers.HyperlinkedRelatedField(
-		view_name='Questions-API:question-detail', 
+		view_name='Questans-API:question-detail', 
 		queryset=Question.objects.all(), 
 		lookup_field='slug'
 	)
+	comments = CommentSerializer(many=True, read_only=True)
 
 	class Meta:
 		model = Answer
@@ -33,16 +44,13 @@ class AnswerSerializer(serializers.HyperlinkedModelSerializer):
 			'id', 'url', 'user', 'question', 'content', 'accepted', 'upvotes', 'downvotes', 'total_points', 
 			'comments', 'date_created'
 		)
-		read_only_fields = ('user', 'upvotes', 'downvotes')
+		read_only_fields = ('id', 'user', 'upvotes', 'downvotes')
 
 
 class QuestionSerializer(serializers.HyperlinkedModelSerializer):
-	# explicitly redefining the url field because the lookup for the view name fails if we don't define it
-	# also explicitly redefining the user and comments field because they also failed to work right off the bat
-	# url = serializers.HyperlinkedIdentityField(read_only=True, view_name='Questions-API:question-detail')
-	url = serializers.HyperlinkedIdentityField(view_name='Questions-API:question-detail', lookup_field='slug')
+	url = serializers.HyperlinkedIdentityField(view_name='Questans-API:question-detail', lookup_field='slug')
 	user = serializers.PrimaryKeyRelatedField(read_only=True)
-	comments = CommentObjectRelatedField(many=True, read_only=True)
+	comments = CommentSerializer(many=True, read_only=True)
 	answers = AnswerSerializer(many=True, read_only=True)
 
 	class Meta:

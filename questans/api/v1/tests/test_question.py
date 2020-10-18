@@ -11,7 +11,7 @@ class QuestionAPITestCase(APITestCase):
 		self.client = APIClient()
 		self.user_model = get_user_model()
 		self.user_auth_token_url = api_reverse('Accounts-API:api_token_auth')
-		self.question_list_create_url = api_reverse('Questions-API:question-list')
+		self.question_list_create_url = api_reverse('Questans-API:question-list')
 		# we're using different values for the email and username fields for test_user and test_superuser because
 		# the values must be unique
 		self.test_user_email = 'test-user@django.com'
@@ -63,7 +63,7 @@ class QuestionAPITestCase(APITestCase):
 		}
 
 		self.test_question = Question.objects.create(**self.test_question_data, user=self.test_superuser)
-		self.test_question_detail_url = api_reverse('Questions-API:question-detail', kwargs={'pk': self.test_question.pk})
+		self.test_question_detail_url = api_reverse('Questans-API:question-detail', kwargs={'pk': self.test_question.pk})
 
 	def test_question_list(self):
 		# passing user token
