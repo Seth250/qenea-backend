@@ -1,6 +1,6 @@
 from .serializers import QuestionSerializer, AnswerSerializer, CommentSerializer
 from rest_framework.viewsets import ModelViewSet
-from rest_framework import permissions
+# from rest_framework import permissions
 from .permissions import CustomModelPermissions
 from questans.models import Question, Answer, Comment
 

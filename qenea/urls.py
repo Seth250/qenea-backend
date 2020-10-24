@@ -42,4 +42,5 @@ urlpatterns = [
 
     path('', include('accounts.api.v1.urls')),
     path('', include('questans.api.v1.urls'))
+	path('', include('profiles.api.v1.urls'))
 ]
