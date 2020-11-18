@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+from corsheaders.defaults import default_headers
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -41,20 +42,41 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
 	'drf_yasg2',
+    'corsheaders',
 
     'accounts.apps.AccountsConfig',
     'questans.apps.QuestansConfig',
+    'profiles.apps.ProfilesConfig'
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+
+    'corsheaders.middleware.CorsMiddleware',
+
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# This will make sure the server accepts request from the specified source only
+# CORS_ORIGIN_WHITELIST = (
+#     'localhost:8081'
+# )
+
+# new name for CORS_ORIGIN_WHITELIST
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:8080',
+    'http://127.0.0.1:8080'
+]
+
+# allow all requests containing any of the default headers(as in django docs) or content-type header
+# CORS_ALLOW_HEADERS = default_headers + (
+#     'contenttype',
+# )
 
 ROOT_URLCONF = 'qenea.urls'
 
