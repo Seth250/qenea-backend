@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
 	'drf_yasg2',
     'corsheaders',
+	'django_rest_passwordreset',
 
     'accounts.apps.AccountsConfig',
     'questans.apps.QuestansConfig',

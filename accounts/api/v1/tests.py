@@ -14,8 +14,8 @@ class AccountsAPITestCase(APITestCase):
         self.test_first_name = 'eren'
         self.test_last_name = 'yeager'
         self.test_password = 'test_password001' 
-        self.create_url = api_reverse('Accounts-API:user_signup')
-        self.auth_token_url = api_reverse('Accounts-API:api_token_auth')
+        self.create_url = api_reverse('Accounts-API:user-signup')
+        self.auth_token_url = api_reverse('Accounts-API:user-auth-token')
         self.user_list_url = api_reverse('Accounts-API:user-list')
 
         self.test_create_user_data = {
