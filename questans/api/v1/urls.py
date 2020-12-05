@@ -1,5 +1,5 @@
 from django.urls import path, include
-from .views import QuestionViewSet, AnswerViewSet, CommentViewSet
+from .views import QuestionViewSet, AnswerViewSet, CommentViewSet, QuestionUpvoteView
 from rest_framework.routers import DefaultRouter
 
 
@@ -12,5 +12,6 @@ router.register(r'comments', CommentViewSet, basename='comment')
 app_name = 'Questans-API'
 
 urlpatterns = [
-    path('', include(router.urls))
+    path('', include(router.urls)),
+	path('questions/<str:slug>/upvote-toggle/', QuestionUpvoteView.as_view(), name='question-upvote-toggle')
 ]

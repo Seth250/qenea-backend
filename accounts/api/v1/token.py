@@ -12,5 +12,6 @@ class CustomAuthToken(ObtainAuthToken):
         token, created = Token.objects.get_or_create(user=user)
         return Response({
             'token': token.key,
-            'email': user.email
+            'email': user.email,
+			'username': user.username
         })

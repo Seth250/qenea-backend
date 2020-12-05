@@ -2,7 +2,11 @@ from .serializers import QuestionSerializer, AnswerSerializer, CommentSerializer
 from rest_framework.viewsets import ModelViewSet
 # from rest_framework import permissions
 from .permissions import CustomModelPermissions
+from django.views.generic.detail import SingleObjectMixin
 from questans.models import Question, Answer, Comment
+from rest_framework.response import Response
+from rest_framework import status, permissions
+from rest_framework.views import APIView
 
 
 class QuestionViewSet(ModelViewSet):
@@ -37,3 +41,29 @@ class CommentViewSet(ModelViewSet):
 
 	def perform_create(self, serializer):
 		return serializer.save(user=self.request.user)
+
+
+class ObjectActionToggleAPIView(SingleObjectMixin, APIView):
+	permission_classes = (permissions.IsAuthenticated, )
+
+	def post(self, request, *args, **kwargs):
+		obj = self.get_object()
+		main_manager, opp_manager = (obj.upvotes, obj.downvotes) if self.action == 'upvote' else (obj.downvotes, obj.upvotes)
+		if request.user in main_manager.all():
+			main_manager.remove(request.user)
+
+		elif request.user in opp_manager.all():
+			opp_manager.remove(request.user)
+			main_manager.add(request.user)
+
+		else:
+			main_manager.add(request.user)
+
+		obj.save() # so that it would call the object's save method and update the total points
+		return Response(status=status.HTTP_200_OK)
+
+
+class QuestionUpvoteView(ObjectActionToggleAPIView):
+	model = Question
+	action = 'upvote'
+
