@@ -52,18 +52,20 @@ class ObjectActionToggleAPIView(SingleObjectMixin, APIView):
 		if request.user in main_manager.all():
 			main_manager.remove(request.user)
 
-		elif request.user in opp_manager.all():
-			opp_manager.remove(request.user)
-			main_manager.add(request.user)
-
 		else:
 			main_manager.add(request.user)
+			if request.user in opp_manager.all():
+				opp_manager.remove(request.user)
 
 		obj.save() # so that it would call the object's save method and update the total points
 		return Response(status=status.HTTP_200_OK)
 
 
-class QuestionUpvoteView(ObjectActionToggleAPIView):
+class QuestionUpvoteAPIView(ObjectActionToggleAPIView):
 	model = Question
 	action = 'upvote'
 
+
+class QuestionDownvoteAPIView(ObjectActionToggleAPIView):
+	model = Question
+	action = 'downvote'
