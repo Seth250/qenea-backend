@@ -45,6 +45,9 @@ class Question(models.Model):
 	date_updated = models.DateTimeField(auto_now=True)
 	comments = GenericRelation(Comment)
 
+	class Meta:
+		ordering = ['-date_posted']
+
 	def __str__(self):
 		return self.title
 
@@ -54,6 +57,7 @@ class Question(models.Model):
 
 		self.slug = slugify(self.title, allow_unicode=True)
 		return super(Question, self).save(*args, **kwargs)
+
 
 	# def get_absolute_url(self):
 	# 	return reverse('question_detail', kwargs={'pk': self.pk, 'slug': self.slug})
@@ -73,8 +77,8 @@ class Answer(models.Model):
 	date_updated = models.DateTimeField(auto_now=True)
 	comments = GenericRelation(Comment)
 
-	# class Meta:
-	# 	ordering = ['-date_created']
+	class Meta:
+		ordering = ['-date_created']
 
 	def save(self, *args, **kwargs):
 		if self.id:
