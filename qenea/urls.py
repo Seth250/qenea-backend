@@ -43,5 +43,5 @@ urlpatterns = [
     path('', include('accounts.api.v1.urls')),
     path('', include('questans.api.v1.urls')),
 	path('', include('profiles.api.v1.urls')),
-	path('auth/reset-password/', include('django_rest_passwordreset.urls', namespace='password_reset'))
+	# path('auth/reset-password/', include('django_rest_passwordreset.urls', namespace='password_reset'))
 ]

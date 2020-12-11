@@ -10,8 +10,6 @@ from django_rest_passwordreset.signals import reset_password_token_created
 from django.urls import reverse
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
-# from django.contrib.sites.models import Site
-from django.contrib.sites.shortcuts import get_current_site
 
 
 class UserCreateAPIView(CreateAPIView):
@@ -50,16 +48,13 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
 	:param kwargs:
 	:return:
 	"""
-	current_site = get_current_site(request=None)
+	password_confirm_url = reverse("Accounts-API:password_reset:reset-password-confirm")
 
 	# send an email to the user
 	context = {
 		'current_user': reset_password_token.user,
-		'username': reset_password_token.user.username,
 		'email': reset_password_token.user.email,
-		'reset_password_url': f"{reverse('password_reset:reset-password-request')}?token={reset_password_token.key}",
-		'domain': current_site.domain,
-		'protocol': 'http'
+		'reset_password_url': f'{instance.request.build_absolute_uri(password_confirm_url)}?token={reset_password_token.key}'
 	}
 
 	# render email text

@@ -175,9 +175,6 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-# to get site in signal
-SITE_ID = 2
-
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 EMAIL_HOST = 'smtp.gmail.com'

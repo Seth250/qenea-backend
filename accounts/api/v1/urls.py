@@ -13,5 +13,6 @@ urlpatterns = [
     path('', include(router.urls)),
     path('auth/signup/', UserCreateAPIView.as_view(), name='user-signup'),
     path('auth/token/login/', CustomAuthToken.as_view(), name='user-auth-token'),
-	path('auth/token/logout/', UserLogoutAPIView.as_view(), name='user-logout')
+	path('auth/token/logout/', UserLogoutAPIView.as_view(), name='user-logout'),
+	path('auth/reset-password/', include('django_rest_passwordreset.urls', namespace='password_reset'))
 ]

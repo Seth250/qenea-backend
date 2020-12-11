@@ -1,6 +1,5 @@
 from .serializers import QuestionSerializer, AnswerSerializer, CommentSerializer
 from rest_framework.viewsets import ModelViewSet
-# from rest_framework import permissions
 from .permissions import CustomModelPermissions
 from django.views.generic.detail import SingleObjectMixin
 from questans.models import Question, Answer, Comment
@@ -14,7 +13,7 @@ class ObjectCommentsViewSetActionMixin:
 
 	@action(methods=['GET'], detail=True)
 	def comments(self, request, *args, **kwargs):
-		obj = self.get_object()
+		obj = self.get_object() # inherited from ModelViewSet or more specifically, GenericAPIView
 		comments = obj.comments.order_by('date_created')
 
 		page = self.paginate_queryset(comments)
@@ -43,7 +42,6 @@ class AnswerViewSet(ObjectCommentsViewSetActionMixin, ModelViewSet):
 	permission_classes = (CustomModelPermissions, )
 
 	def get_queryset(self):
-		print('lol')
 		return Answer.objects.all()
 
 	def perform_create(self, serializer):
@@ -75,20 +73,21 @@ class ObjectActionToggleAPIView(SingleObjectMixin, APIView):
 		return Response(status=status.HTTP_404_NOT_FOUND)
 
 	def post(self, request, *args, **kwargs):
-		self.object = self.get_object()
+		self.object = self.get_object() # inherited from SingleObjectMixin
 		main_manager, opp_manager = self.get_action_managers()
 
-		# if request.user in main_manager.all():
-		# 	main_manager.remove(request.user)
+		if request.user in main_manager.all():
+			main_manager.remove(request.user)
 
-		# else:
-		# 	main_manager.add(request.user)
-		# 	# if the user has previously performed an opposite action, remove that.
-		# 	if request.user in opp_manager.all():
-		# 		opp_manager.remove(request.user)
+		else:
+			main_manager.add(request.user)
+			# if the user has previously performed an opposite action, remove that.
+			if request.user in opp_manager.all():
+				opp_manager.remove(request.user)
 
-		# self.object.save() # so that it would call the object's save method and update the total points
-		return Response(status=status.HTTP_200_OK)
+		# calling the object's save method so that the object's total points would be updated
+		self.object.save()
+		return Response({'status': 'OK'}, status=status.HTTP_200_OK)
 
 
 class QuestionActionToggleAPIView(ObjectActionToggleAPIView):

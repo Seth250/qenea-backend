@@ -1,11 +1,10 @@
 from django.db import models
 from django.conf import settings
 from django.utils.text import slugify
-from django.urls import reverse
+# from django.urls import reverse
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericRelation
-from rest_framework.reverse import reverse as api_reverse
 
 
 # Create your models here.
@@ -55,7 +54,7 @@ class Question(models.Model):
 		if self.id:
 			self.total_points = self.upvotes.count() - self.downvotes.count()
 
-		self.slug = slugify(self.title, allow_unicode=True)
+		self.slug = slugify('%s-%d' % (self.title, self.id), allow_unicode=True)
 		return super(Question, self).save(*args, **kwargs)
 
 

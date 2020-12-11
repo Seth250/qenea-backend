@@ -2,12 +2,9 @@ from rest_framework import serializers
 from questans.models import Question, Answer, Comment
 from rest_framework.reverse import reverse as api_reverse
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.auth import get_user_model
 from accounts.api.v1.serializers import UserSerializer
 from django.core.paginator import Paginator
 
-
-UserModel = get_user_model()
 
 class ContentTypeRelatedField(serializers.RelatedField):
 
@@ -42,8 +39,8 @@ class AnswerSerializer(serializers.HyperlinkedModelSerializer):
 		queryset=Question.objects.all(), 
 		lookup_field='slug'
 	)
-	# serializer method field is implicitly read_only
-	comments = serializers.SerializerMethodField(method_name='get_comments_url', read_only=True)
+	# serializer method fields are implicitly read_only
+	comments = serializers.SerializerMethodField(method_name='get_comments_url')
 	# comments = CommentSerializer(many=True, read_only=True)
 
 	class Meta:
@@ -83,20 +80,19 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
 		page_size = request.query_params.get('size') or 5
 		paginator = Paginator(obj.answers.all(), page_size)
 		# page number for the question's answers pagination.
-		# I'm using 'answer-page' instead of the typical 'page' as the page query parameter to prevent possible
-		# conflicts with the question list endpoint (since this is a nested pagination).
+		# I'm using 'answer-page' instead of the typical 'page' as the page query parameter for question answers 
+		# to prevent possible conflicts with the question list endpoint (since this is a nested pagination).
 		page_number = request.query_params.get('answer-page') or 1
 		page = paginator.page(page_number)
 		serializer = AnswerSerializer(page, many=True, context={'request': request})
 		question_url = api_reverse('Questans-API:question-detail', kwargs={'slug': obj.slug}, request=request)
 
 		next_url = f"{question_url}?answer-page={page.next_page_number()}" if page.has_next() else None
+
+		previous_url = None
 		if page.has_previous():
 			previous_page_number = page.previous_page_number()
 			previous_url = f"{question_url}{f'?answer-page={previous_page_number}' if previous_page_number != 1 else ''}"
-
-		else:
-			previous_url = None
 
 		response = {
 			"count": page.paginator.count,
