@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth import password_validation as validators
 from django.core import exceptions
+from profiles.models import Profile
 import collections
 
 
@@ -15,11 +16,12 @@ class UserSerializer(serializers.ModelSerializer):
 	password2 = serializers.CharField(
 		write_only=True, required=True, style={'input_type': 'password', 'placeholder': 'Confirm Password'}
 	)
+	profile = serializers.HyperlinkedRelatedField(view_name='Profiles-API:profile-detail', read_only=True)
 
 	class Meta:
 		model = UserModel
-		fields = ('id', 'email', 'username', 'first_name', 'last_name', 'password', 'password2')
-		read_only_fields = ('id', 'email', 'username', 'first_name', 'last_name')
+		fields = ('id', 'profile', 'email', 'username', 'first_name', 'last_name', 'password', 'password2')
+		read_only_fields = ('id', 'email')
 
 	def validate(self, data):
 		password = data['password']
@@ -43,4 +45,5 @@ class UserSerializer(serializers.ModelSerializer):
 
 	def create(self, validated_data):
 		user = UserModel.objects.create_user(**validated_data)
+		Profile.objects.create(user=user)
 		return user

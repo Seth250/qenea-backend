@@ -1,9 +1,13 @@
 from .serializers import ProfileSerializer
-from rest_framework.viewsets import ModelViewSet
+from rest_framework import mixins, viewsets
 from questans.api.v1.permissions import CustomModelPermissions
+from profiles.models import Profile
 
 
-class ProfileViewSet(ModelViewSet):
+class ProfileViewSet(mixins.ListModelMixin,
+					 mixins.RetrieveModelMixin,
+					 mixins.UpdateModelMixin,
+					 viewsets.GenericViewSet):
 	serializer_class = ProfileSerializer
 	permission_classes = (CustomModelPermissions, )
 
