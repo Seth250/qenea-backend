@@ -93,7 +93,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ),
     # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    
+
     # to make page size (number of results returned) dynamic
     'DEFAULT_PAGINATION_CLASS': 'qenea_backend.pagination.DefaultPageNumberPagination'
 }
@@ -129,7 +129,8 @@ AUTH_USER_MODEL = 'accounts.User'
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+# TIME_ZONE = 'UTC'
+TIME_ZONE = 'Africa/Lagos'
 
 USE_I18N = True
 
