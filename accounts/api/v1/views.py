@@ -20,7 +20,7 @@ class UserCreateAPIView(generics.CreateAPIView):
 
 class ObtainAuthTokenAPIView(views.APIView):
     """
-    Endpoint to obtain authentication token for registered users
+    Endpoint to login registered users (obtain authentication token)
     """
     permission_classes = (permissions.AllowAny, )
     serializer_class = AuthTokenSerializer
@@ -46,3 +46,14 @@ class ObtainAuthTokenAPIView(views.APIView):
             'email': user.email
         }
         return Response(data=data, status=status.HTTP_200_OK)
+
+
+class AuthTokenDestroyAPIView(views.APIView):
+    """
+    Endpoint to logout users (delete authentication token)
+    """
+    permission_classes = (permissions.IsAuthenticated, )
+
+    def post(self, request, *args, **kwargs):
+        request.user.auth_token.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
