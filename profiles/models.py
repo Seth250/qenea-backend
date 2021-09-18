@@ -17,6 +17,7 @@ class Profile(models.Model):
 
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     username = models.CharField(_('username'), max_length=25, unique=True)
+    picture = models.ImageField(_('picture'), default='default_pp.png', upload_to='profile_pictures')
     gender = models.CharField(choices=GENDER, max_length=10, default='')
     bio = models.CharField(max_length=500, blank=True)
     date_of_birth = models.DateTimeField(_('date of birth'), blank=True, null=True)
