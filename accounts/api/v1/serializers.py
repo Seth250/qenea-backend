@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from django.contrib.auth import get_user_model
+from django.contrib.auth import authenticate, get_user_model
 from django.core import exceptions as django_exceptions
 from django.core.validators import RegexValidator
 from django.contrib.auth.password_validation import validate_password
@@ -68,3 +68,36 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
         Profile.objects.create(user=user, username=username)
         return user
+
+
+class AuthTokenSerializer(serializers.Serializer):
+    email = serializers.EmailField(
+        label=_('Email Address'),
+        write_only=True
+    )
+    password = serializers.CharField(
+        label=_('Password'),
+        style={'input_type': 'password'},
+        trim_whitespace=False,
+        write_only=True
+    )
+
+    default_error_messages = {
+        'invalid_credentials': _('Email and password combination is not correct.'),
+        'incomplete_credentials': _('Must include "email" and "password".')
+    }
+
+    def validate(self, attrs):
+        email = attrs.get('email')
+        password = attrs.get('password')
+
+        if email and password:
+            user = authenticate(request=self.context.get('request'), email=email, password=password)
+            if not user:
+                self.fail('invalid_credentials')
+
+        else:
+            self.fail('incomplete_credentials')
+
+        attrs['user'] = user
+        return attrs
