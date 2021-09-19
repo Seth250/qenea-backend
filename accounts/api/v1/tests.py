@@ -68,3 +68,16 @@ class AccountsAPITestCase(APITestCase):
         test_auth_token = test_response.data['auth_token']
         test_user = User.objects.get(email=self.test_user_signup_data['email'])
         self.assertEqual(test_user.auth_token.key, test_auth_token)
+
+    def test_user_token_logout(self):
+        # to test token logout, a user needs to be created
+        test_res = self.client.post(path=self.signup_url, data=self.test_user_signup_data)
+        self.assertEqual(test_res.status_code, status.HTTP_201_CREATED)
+        # the user also needs to be authenticated (token login) before logout can occur
+        test_res = self.client.post(path=self.login_url, data=self.test_auth_data)
+        self.assertEqual(test_res.status_code, status.HTTP_200_OK)
+        test_auth_token = test_res.data['auth_token']
+        # testing token logout
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {test_auth_token}') # passing the user's auth token
+        test_response = self.client.post(path=self.logout_url)
+        self.assertEqual(test_response.status_code, status.HTTP_204_NO_CONTENT)
