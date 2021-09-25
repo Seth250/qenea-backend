@@ -1,12 +1,12 @@
-from rest_framework import serializers
-from rest_framework.validators import UniqueValidator
-from django.contrib.auth import authenticate, get_user_model
-from django.core import exceptions as django_exceptions
-from django.core.validators import RegexValidator
-from django.contrib.auth.password_validation import validate_password
-from django.utils.translation import gettext_lazy as _
-from profiles.models import Profile
 import collections
+from profiles.models import Profile
+from rest_framework import serializers
+from django.core.validators import RegexValidator
+from rest_framework.validators import UniqueValidator
+from django.utils.translation import gettext_lazy as _
+from django.core import exceptions as django_exceptions
+from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth.password_validation import validate_password
 
 
 User = get_user_model()
@@ -101,3 +101,10 @@ class AuthTokenSerializer(serializers.Serializer):
 
         attrs['user'] = user
         return attrs
+
+
+class UserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ('id', 'first_name', 'last_name', 'email')
