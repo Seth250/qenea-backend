@@ -18,7 +18,8 @@ from django.urls import path, include
 
 
 v1_urls = [
-    path('', include('accounts.api.v1.urls'))
+    path('', include('accounts.api.v1.urls')),
+    path('', include('profiles.api.v1.urls'))
 ]
 
 urlpatterns = [
