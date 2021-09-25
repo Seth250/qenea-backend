@@ -20,7 +20,14 @@ class Profile(models.Model):
     picture = models.ImageField(_('picture'), default='default_pp.png', upload_to='profile_pictures')
     gender = models.CharField(choices=GENDER, max_length=2, default='')
     bio = models.CharField(max_length=500, blank=True)
+    following = models.ManyToManyField('self', symmetrical=False, related_name='followers', blank=True)
     date_of_birth = models.DateTimeField(_('date of birth'), blank=True, null=True)
 
     def __str__(self):
         return self.username
+
+    def get_following_count(self):
+        return self.following.count()
+
+    def get_followers_count(self):
+        return self.followers.count()
