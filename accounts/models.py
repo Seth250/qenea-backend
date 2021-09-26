@@ -1,9 +1,10 @@
 from django.db import models
+from .managers import UserManager
 from django.core.mail import send_mail
+from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import PermissionsMixin
 from django.contrib.auth.base_user import AbstractBaseUser
-from django.utils.translation import gettext_lazy as _
-from .managers import UserManager
+from .validators import validate_username, MAX_USERNAME_LENGTH
 
 
 # Create your models here.
@@ -11,6 +12,7 @@ from .managers import UserManager
 class User(PermissionsMixin, AbstractBaseUser):
     first_name = models.CharField(_('first name'), max_length=25)
     last_name = models.CharField(_('last name'), max_length=25)
+    username = models.CharField(_('username'), max_length=MAX_USERNAME_LENGTH, unique=True, validators=[validate_username])
     email = models.EmailField(
         _('email address'),
         unique=True,
