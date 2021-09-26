@@ -1,28 +1,28 @@
 import collections
-from profiles.models import Profile
 from rest_framework import serializers
-from django.core.validators import RegexValidator
+from rest_framework.exceptions import NotFound
 from rest_framework.validators import UniqueValidator
 from django.utils.translation import gettext_lazy as _
 from django.core import exceptions as django_exceptions
 from django.contrib.auth import authenticate, get_user_model
+from profiles.api.v1.serializers import SerializerUsernameField
 from django.contrib.auth.password_validation import validate_password
+from accounts.validators import regex_username_validator, MIN_USERNAME_LENGTH, MAX_USERNAME_LENGTH
 
 
 User = get_user_model()
 
 class SerializerUsernameField(serializers.CharField):
     default_error_messages = {
-        'non_unique': _('This username already exists.'),
-        'invalid': _('Username can only contain letters, numbers or underscore.')
+        'non_unique': _('This username already exists.')
     }
 
-    def __init__(self, max_length=25, **kwargs):
-        kwargs['max_length'] = max_length
+    def __init__(self, **kwargs):
+        kwargs['min_length'] = MIN_USERNAME_LENGTH
+        kwargs['max_length'] = MAX_USERNAME_LENGTH
         super().__init__(**kwargs)
-        unique_validator = UniqueValidator(queryset=Profile.objects.all(), message=self.error_messages['non_unique'], lookup='iexact')
-        regex_validator = RegexValidator(regex=r'^[a-zA-Z0-9_]*$', message=self.error_messages['invalid'])
-        self.validators.extend([unique_validator, regex_validator])
+        unique_validator = UniqueValidator(queryset=User.objects.all(), message=self.error_messages['non_unique'], lookup='iexact')
+        self.validators.extend([unique_validator, regex_username_validator])
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -59,14 +59,12 @@ class UserCreateSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-        username = validated_data.pop('username')
-
         try:
             user = User.objects.create_user(**validated_data)
+            # NOTE: the profile is created in the manager
         except:
             self.fail('cannot_create')
-
-        Profile.objects.create(user=user, username=username)
+            
         return user
 
 
@@ -107,4 +105,5 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'first_name', 'last_name', 'email')
+        fields = ('id', 'first_name', 'last_name', 'email', 'username')
+        read_only_fields = ('id', 'email')
