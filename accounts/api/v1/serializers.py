@@ -1,13 +1,15 @@
 import collections
+
+from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth.password_validation import validate_password
+from django.core import exceptions as django_exceptions
+from django.utils.translation import gettext_lazy as _
+
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound
 from rest_framework.validators import UniqueValidator
-from django.utils.translation import gettext_lazy as _
-from django.core import exceptions as django_exceptions
-from django.contrib.auth import authenticate, get_user_model
-from profiles.api.v1.serializers import SerializerUsernameField
-from django.contrib.auth.password_validation import validate_password
-from accounts.validators import regex_username_validator, MIN_USERNAME_LENGTH, MAX_USERNAME_LENGTH
+
+from accounts.validators import MAX_USERNAME_LENGTH, MIN_USERNAME_LENGTH, regex_username_validator
 
 
 User = get_user_model()
@@ -107,3 +109,21 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ('id', 'first_name', 'last_name', 'email', 'username')
         read_only_fields = ('id', 'email')
+
+
+class EmailRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField(write_only=True)
+
+    default_error_messages = {
+        'not_found': _('User with the given email does not exist.')
+    }
+
+    def validate(self, attrs):
+        email = attrs.get('email')
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            raise NotFound(self.error_messages['not_found'])
+
+        attrs['user'] = user
+        return attrs
