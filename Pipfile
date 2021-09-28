@@ -5,10 +5,11 @@ name = "pypi"
 
 [packages]
 django = "==3.1.12"
-python-decouple = "==3.4"
 djangorestframework = "==3.12.4"
 pillow = "==8.3.2"
-celery = "==5.1.2"
+python-decouple = "==3.4"
+redis = "==3.5.3"
+celery = "==5.0.2"
 
 [dev-packages]
 isort = "==5.9.3"
