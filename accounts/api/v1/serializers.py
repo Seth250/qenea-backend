@@ -1,5 +1,3 @@
-import collections
-
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core import exceptions as django_exceptions
@@ -28,7 +26,7 @@ class SerializerUsernameField(serializers.CharField):
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
-    username = SerializerUsernameField(write_only=True)
+    username = SerializerUsernameField()
     password = serializers.CharField(style={'input_type': 'password', 'placeholder': 'Password'}, write_only=True)
 
     default_error_messages = {
