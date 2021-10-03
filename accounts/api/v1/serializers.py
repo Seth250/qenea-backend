@@ -30,35 +30,24 @@ class SerializerUsernameField(serializers.CharField):
 class UserCreateSerializer(serializers.ModelSerializer):
     username = SerializerUsernameField(write_only=True)
     password = serializers.CharField(style={'input_type': 'password', 'placeholder': 'Password'}, write_only=True)
-    password2 = serializers.CharField(style={'input_type': 'password', 'placeholder': 'Confirm Password'}, write_only=True)
 
     default_error_messages = {
-        'cannot_create': _('Unable to create account.'),
-        'password_mismatch': _('The two password fields didn\'t match.')
+        'cannot_create': _('Unable to create account.')
     }
 
     class Meta:
         model = User
-        fields = ('id', 'first_name', 'last_name', 'email', 'username', 'password', 'password2')
+        fields = ('id', 'first_name', 'last_name', 'email', 'username', 'password')
 
-    def validate(self, attrs):
-        password = attrs.get('password')
-        # since only one password field is needed for user creation, we can remove the second password field
-        password2 = attrs.pop('password2')
-
-        errors = collections.defaultdict(list)
-        if password != password2:
-            errors['password2'].append(self.error_messages['password_mismatch'])
-
+    def validate_password(self, password):
         try:
             validate_password(password=password, user=User)
-        except django_exceptions.ValidationError as err:
-            errors['password2'].extend(err.messages)
+        except django_exceptions.ValidationError as e:
+            # since the error is raised in a field validation, the serializer field is automatically added as the key for
+            # the error (field does not need to be explicitly added since it's not an object/non field validation)
+            raise serializers.ValidationError(e.messages)
 
-        if errors:
-            raise serializers.ValidationError(errors)
-
-        return attrs
+        return password
 
     def create(self, validated_data):
         try:
