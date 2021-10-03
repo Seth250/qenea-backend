@@ -32,7 +32,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
     password = serializers.CharField(style={'input_type': 'password', 'placeholder': 'Password'}, write_only=True)
 
     default_error_messages = {
-        'cannot_create': _('Unable to create account.')
+        'cannot_create_user': _('Unable to create account.')
     }
 
     class Meta:
@@ -54,7 +54,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
             user = User.objects.create_user(**validated_data)
             # NOTE: the profile is created in the manager
         except:
-            self.fail('cannot_create')
+            self.fail('cannot_create_user')
             
         return user
 
