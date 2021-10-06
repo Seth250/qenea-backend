@@ -27,3 +27,10 @@ class ProfileSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        if self.context['request'].method == 'GET':
+            ret['gender_choices'] = instance.GENDER_CHOICES
+
+        return ret
