@@ -20,6 +20,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             user.first_name = user_data.get('first_name', user.first_name)
             user.last_name = user_data.get('last_name', user.last_name)
             user.username = user_data.get('username', user.username)
+            user.save()
 
         instance.bio = validated_data.get('bio', instance.bio)
         instance.gender = validated_data.get('gender', instance.gender)
