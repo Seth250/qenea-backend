@@ -1,16 +1,20 @@
-from profiles.models import Profile
-from .serializers import ProfileSerializer
 from rest_framework import generics, permissions
+
+from profiles.models import Profile
+
+from .serializers import ProfileSerializer
 
 
 class ProfileDetailAPIView(generics.RetrieveAPIView):
     """
     Endpoint to view the profile information of users
     """
-    queryset = Profile.objects.all()
     permission_classes = (permissions.AllowAny, )
     serializer_class = ProfileSerializer
-    lookup_field = 'username'
+
+    def get_object(self):
+        username = self.kwargs['username']
+        return Profile.objects.get(user__username=username)
 
 
 class ProfileRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
@@ -22,4 +26,3 @@ class ProfileRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         return Profile.objects.get(user=self.request.user)
-
