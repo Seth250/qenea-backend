@@ -54,17 +54,21 @@ class ProfilesAPITestCase(APITestCase):
         test_response = self.client.get(path=self.user_profile_url)
         self.assertEqual(test_response.status_code, status.HTTP_200_OK)
         test_response_data = test_response.data
-        self.assertEqual(test_response_data['user']['first_name'], self.test_first_create_user_data['first_name'])
-        self.assertEqual(test_response_data['user']['last_name'], self.test_first_create_user_data['last_name'])
-        self.assertEqual(test_response_data['user']['email'], self.test_first_create_user_data['email'])
-        self.assertEqual(test_response_data['user']['username'], self.test_first_create_user_data['username'])
         test_profile = Profile.objects.get(id=test_response_data['id'])
-        self.assertEqual(test_response_data['bio'], test_profile.bio)
-        self.assertEqual(test_response_data['gender'], test_profile.gender)
-        self.assertEqual(test_response_data['gender_choices'], test_profile.GENDER_CHOICES)
-        self.assertEqual(test_response_data['followers_count'], test_profile.get_followers_count())
-        self.assertEqual(test_response_data['following_count'], test_profile.get_following_count())
-        self.assertEqual(test_response_data['date_of_birth'], test_profile.date_of_birth)
+        self.assertEqual(test_profile.user.first_name, self.test_first_create_user_data['first_name'])
+        self.assertEqual(test_profile.user.first_name, test_response_data['user']['first_name'])
+        self.assertEqual(test_profile.user.last_name, self.test_first_create_user_data['last_name'])
+        self.assertEqual(test_profile.user.last_name, test_response_data['user']['last_name'])
+        self.assertEqual(test_profile.user.email, self.test_first_create_user_data['email'])
+        self.assertEqual(test_profile.user.email, test_response_data['user']['email'])
+        self.assertEqual(test_profile.user.username, self.test_first_create_user_data['username'])
+        self.assertEqual(test_profile.user.username, test_response_data['user']['username'])
+        self.assertEqual(test_profile.bio, test_response_data['bio'])
+        self.assertEqual(test_profile.gender, test_response_data['gender'])
+        self.assertEqual(test_profile.GENDER_CHOICES, test_response_data['gender_choices'])
+        self.assertEqual(test_profile.get_followers_count(), test_response_data['followers_count'])
+        self.assertEqual(test_profile.get_following_count(), test_response_data['following_count'])
+        self.assertEqual(test_profile.date_of_birth, test_response_data['date_of_birth'])
 
     def test_user_profile_update(self):
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.test_first_auth_token}') # passing auth token
@@ -76,15 +80,48 @@ class ProfilesAPITestCase(APITestCase):
                 'username': 'last_son_of_house_belmont'
             },
             'bio': 'This is a bio (no shit sherlock)',
-            'gender': 'M'
+            'gender': 'M',
+            'date_of_birth': '2002-02-02'
         }
         test_response = self.client.put(path=self.user_profile_url, data=test_profile_update_data, format='json')
         self.assertEqual(test_response.status_code, status.HTTP_200_OK)
         test_response_data = test_response.data
-        self.assertEqual(test_response_data['user']['first_name'], test_profile_update_data['user']['first_name'])
-        self.assertEqual(test_response_data['user']['last_name'], test_profile_update_data['user']['last_name'])
-        self.assertEqual(test_response_data['user']['username'], test_profile_update_data['user']['username'])
-        self.assertEqual(test_response_data['bio'], test_profile_update_data['bio'])
-        self.assertEqual(test_response_data['gender'], test_profile_update_data['gender'])
+        test_profile = Profile.objects.get(id=test_response_data['id'])
+        self.assertEqual(test_profile.user.first_name, test_profile_update_data['user']['first_name'])
+        self.assertEqual(test_profile.user.first_name, test_response_data['user']['first_name'])
+        self.assertEqual(test_profile.user.last_name, test_profile_update_data['user']['last_name'])
+        self.assertEqual(test_profile.user.last_name, test_response_data['user']['last_name'])
+        self.assertEqual(test_profile.user.username, test_profile_update_data['user']['username'])
+        self.assertEqual(test_profile.user.username, test_response_data['user']['username'])
+        self.assertEqual(test_profile.bio, test_profile_update_data['bio'])
+        self.assertEqual(test_profile.bio, test_response_data['bio'])
+        self.assertEqual(test_profile.gender, test_profile_update_data['gender'])
+        self.assertEqual(test_profile.gender, test_response_data['gender'])
+        self.assertEqual(str(test_profile.date_of_birth), test_profile_update_data['date_of_birth'])
+        self.assertEqual(str(test_profile.date_of_birth), test_response_data['date_of_birth'])
+        # making sure the email hasn't changed
+        self.assertEqual(test_profile.user.email, test_response_data['user']['email'])
 
+    def test_profile_detail(self):
+        test_first_profile_detail_url = api_reverse(
+            'Profiles_API_v1:profile-detail',
+            kwargs={'username': self.test_first_create_user_data['username']}
+        )
+        test_response = self.client.get(path=test_first_profile_detail_url)
+        test_response_data = test_response.data
+        test_profile = Profile.objects.get(id=test_response_data['id'])
+        self.assertEqual(test_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(test_profile.user.first_name, self.test_first_create_user_data['first_name'])
+        self.assertEqual(test_profile.user.first_name, test_response_data['user']['first_name'])
+        self.assertEqual(test_profile.user.last_name, self.test_first_create_user_data['last_name'])
+        self.assertEqual(test_profile.user.last_name, test_response_data['user']['last_name'])
+        self.assertEqual(test_profile.user.email, self.test_first_create_user_data['email'])
+        self.assertEqual(test_profile.user.email, test_response_data['user']['email'])
+        self.assertEqual(test_profile.user.username, self.test_first_create_user_data['username'])
+        self.assertEqual(test_profile.user.username, test_response_data['user']['username'])
+        self.assertEqual(test_profile.bio, test_response_data['bio'])
+        self.assertEqual(test_profile.gender, test_response_data['gender'])
+        self.assertEqual(test_profile.get_followers_count(), test_response_data['followers_count'])
+        self.assertEqual(test_profile.get_following_count(), test_response_data['following_count'])
+        self.assertEqual(test_profile.date_of_birth, test_response_data['date_of_birth'])
 
