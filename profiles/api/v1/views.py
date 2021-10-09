@@ -35,16 +35,16 @@ class FollowToggleProfileAPIView(views.APIView):
     """
     permission_classes = (permissions.IsAuthenticated, )
 
-    def get_object(self):
+    def get_object(self, username):
         try:
-            return Profile.objects.get(pk=self.kwargs['pk'])
+            return Profile.objects.get(user__username=username)
         except Profile.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
     def post(self, request, *args, **kwargs):
         following = True
         user_profile = request.user.profile
-        obj = self.get_object()
+        obj = self.get_object(username=kwargs.get('username'))
         # if the user is already being followed, then unfollow
         if user_profile.following.filter(pk=obj.pk).exists():
             user_profile.following.remove(obj)
