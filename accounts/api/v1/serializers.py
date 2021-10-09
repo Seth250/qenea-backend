@@ -4,13 +4,13 @@ from django.core import exceptions as django_exceptions
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import serializers
-from rest_framework.exceptions import NotFound
 from rest_framework.validators import UniqueValidator
 
-from accounts.validators import MAX_USERNAME_LENGTH, MIN_USERNAME_LENGTH, regex_username_validator
-
+from accounts.validators import (MAX_USERNAME_LENGTH, MIN_USERNAME_LENGTH,
+                                 regex_username_validator)
 
 User = get_user_model()
+
 
 class SerializerUsernameField(serializers.CharField):
     default_error_messages = {
@@ -101,16 +101,12 @@ class UserSerializer(serializers.ModelSerializer):
 class EmailRequestSerializer(serializers.Serializer):
     email = serializers.EmailField(write_only=True)
 
-    default_error_messages = {
-        'not_found': _('User with the given email does not exist.')
-    }
-
     def validate(self, attrs):
         email = attrs.get('email')
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            raise NotFound(self.error_messages['not_found'])
+            user = ''
 
         attrs['user'] = user
         return attrs
