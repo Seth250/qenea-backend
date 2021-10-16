@@ -1,5 +1,3 @@
-import smtplib
-
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.sites.shortcuts import get_current_site
@@ -81,32 +79,29 @@ class RequestPasswordResetEmailAPIView(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        email = serializer.validated_data['email']
         user = serializer.validated_data['user']
-
-        subject = 'Reset Your Qenea Password'
-        domain = get_current_site(request=request).domain
-        password_reset_confirm_url = api_reverse(
-            'Accounts_API_v1:password-reset-confirm',
-            kwargs={
-                'uidb64': urlsafe_base64_encode(smart_bytes(user.id)),
-                'token': PasswordResetTokenGenerator().make_token(user)
+        if user:
+            email = serializer.validated_data['email']
+            subject = 'Reset Your Qenea Password'
+            protocol = request.scheme,
+            domain = get_current_site(request=request).domain
+            confirm_url = api_reverse(
+                'Accounts_API_v1:password-reset-confirm',
+                kwargs={
+                    'uidb64': urlsafe_base64_encode(smart_bytes(user.id)),
+                    'token': PasswordResetTokenGenerator().make_token(user)
+                }
+            )
+            password_reset_confirm_url = f'{protocol}://{domain}{confirm_url}'
+            context = {
+                'user_firstname': user.first_name,
+                'password_reset_confirm_url': password_reset_confirm_url
             }
-        )
-        context = {
-            'user_fullname': user.fullname,
-            'protocol': request.scheme,
-            'domain': domain,
-            'confirm_url': password_reset_confirm_url
-        }
+            html_content = render_to_string('accounts/password_reset_email.html', context=context, request=request)
+            text_content = render_to_string('accounts/password_reset_email.txt', context=context, request=request)
 
-        html_content = render_to_string('accounts/password_reset_email.html', context=context, request=request)
-        text_content = render_to_string('accounts/password_reset_email.txt', context=context, request=request)
-
-        try:
             # .delay() makes the celery task run in the background
             send_email.delay(subject=subject, body=text_content, to=email, html_content=html_content)
-        except smtplib.SMTPException as e:
-            print(e)
 
-        return Response(status=status.HTTP_200_OK)
+        msg = 'If an account exists, you would receive an email with further instructions.'
+        return Response(data={'message': msg}, status=status.HTTP_200_OK)
