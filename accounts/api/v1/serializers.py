@@ -4,29 +4,11 @@ from django.core import exceptions as django_exceptions
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import serializers
-from rest_framework.validators import UniqueValidator
-
-from accounts.validators import (MAX_USERNAME_LENGTH, MIN_USERNAME_LENGTH,
-                                 regex_username_validator)
 
 User = get_user_model()
 
 
-class SerializerUsernameField(serializers.CharField):
-    default_error_messages = {
-        'non_unique': _('This username already exists.')
-    }
-
-    def __init__(self, **kwargs):
-        kwargs['min_length'] = MIN_USERNAME_LENGTH
-        kwargs['max_length'] = MAX_USERNAME_LENGTH
-        super().__init__(**kwargs)
-        unique_validator = UniqueValidator(queryset=User.objects.all(), message=self.error_messages['non_unique'], lookup='iexact')
-        self.validators.extend([unique_validator, regex_username_validator])
-
-
 class UserCreateSerializer(serializers.ModelSerializer):
-    username = SerializerUsernameField()
     password = serializers.CharField(style={'input_type': 'password', 'placeholder': 'Password'}, write_only=True)
 
     default_error_messages = {
