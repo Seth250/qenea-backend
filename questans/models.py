@@ -31,3 +31,26 @@ class Question(models.Model):
 
     def get_total_points(self):
         return self.upvotes.count() - self.downvotes.count()
+
+
+class Answer(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='answers')
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answers')
+    content = models.TextField()
+    is_accepted = models.BooleanField(default=False)
+    upvotes = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='answer_upvotes')
+    downvotes = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='answer_downvotes')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user}'s answer"
+
+    def get_total_points(self):
+        return self.upvotes.count() - self.downvotes.count()
+
+
+
