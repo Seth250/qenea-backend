@@ -187,7 +187,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message} {lineno}',
+            'format': '{asctime}  [{levelname}]  [{module}]  {process:d}  {thread:d}  {lineno}  {message}',
             'style': '{',
             'datefmt': '%Y-%m-%d %H:%M:%S'
         },
