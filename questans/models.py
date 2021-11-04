@@ -15,8 +15,8 @@ class Question(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     slug = models.SlugField(max_length=150, default='', editable=False, unique=True)
     description = models.TextField()
-    upvotes = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='question_upvotes')
-    downvotes = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='question_downvotes')
+    upvotes = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='questions_upvoted')
+    downvotes = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='questions_downvoted')
     date_posted = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -38,8 +38,8 @@ class Answer(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answers')
     content = models.TextField()
     is_accepted = models.BooleanField(default=False)
-    upvotes = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='answer_upvotes')
-    downvotes = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='answer_downvotes')
+    upvotes = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='answers_upvoted')
+    downvotes = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='answers_downvoted')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
