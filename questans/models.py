@@ -24,6 +24,7 @@ class Question(models.Model):
     description = models.TextField()
     upvotes = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='questions_upvoted')
     downvotes = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='questions_downvoted')
+    tags = models.ManyToManyField(Tag, related_name='questions')
     date_posted = models.DateTimeField(auto_now_add=True)
 
     class Meta:
