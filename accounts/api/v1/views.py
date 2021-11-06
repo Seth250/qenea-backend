@@ -15,7 +15,7 @@ from rest_framework.reverse import reverse as api_reverse
 from accounts.tasks import send_email
 
 from .serializers import (AuthTokenSerializer, EmailRequestSerializer,
-                          UserCreateSerializer)
+                          SetNewPasswordSerializer, UserCreateSerializer)
 
 User = get_user_model()
 
@@ -112,6 +112,7 @@ class PasswordResetConfirmAPIView(views.APIView):
     """
     Endpoint to ensure that uidb64 and token are valid
     """
+    permission_classes = (permissions.AllowAny, )
 
     def get(self, request, *args, **kwargs):
         try:
@@ -120,7 +121,7 @@ class PasswordResetConfirmAPIView(views.APIView):
             id_ = smart_str(urlsafe_base64_decode(uidb64))
             user = User.objects.get(id=id_)
 
-            if not PasswordResetTokenGenerator().check_token(user=user, token=token):
+            if not PasswordResetTokenGenerator().check_token(user=user, token=token): # if token has already been used
                 # TODO: add custom error page or redirect to frontend error page when created
                 return Response(status=status.HTTP_403_FORBIDDEN)
 
@@ -130,3 +131,17 @@ class PasswordResetConfirmAPIView(views.APIView):
         except DjangoUnicodeDecodeError:
             # TODO: add custom error page or redirect to frontend error page when created
             return Response(status=status.HTTP_403_FORBIDDEN)
+
+
+class SetNewPasswordAPIView(generics.GenericAPIView):
+    """
+    Endpoint to set the user's new password
+    """
+    serializer_class = SetNewPasswordSerializer
+    permission_classes = (permissions.AllowAny, )
+
+    def patch(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'message': 'Password has been reset successfully!'}, status=status.HTTP_200_OK)
