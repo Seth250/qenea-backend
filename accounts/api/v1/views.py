@@ -1,8 +1,11 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.http.response import HttpResponseRedirect
 from django.template.loader import render_to_string
-from django.utils.encoding import smart_bytes
-from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import (DjangoUnicodeDecodeError, smart_bytes,
+                                   smart_str)
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 
 from rest_framework import generics, permissions, status, views
 from rest_framework.authtoken.models import Token
@@ -103,3 +106,27 @@ class RequestPasswordResetEmailAPIView(generics.GenericAPIView):
 
         msg = 'If an account exists, you would receive an email with further instructions.'
         return Response(data={'message': msg}, status=status.HTTP_200_OK)
+
+
+class PasswordResetConfirmAPIView(views.APIView):
+    """
+    Endpoint to ensure that uidb64 and token are valid
+    """
+
+    def get(self, request, *args, **kwargs):
+        try:
+            uidb64 = kwargs['uidb64']
+            token = kwargs['token']
+            id_ = smart_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(id=id_)
+
+            if not PasswordResetTokenGenerator().check_token(user=user, token=token):
+                # TODO: add custom error page or redirect to frontend error page when created
+                return Response(status=status.HTTP_403_FORBIDDEN)
+
+            frontend_confirm_url = f'{settings.BASE_FRONTEND_URL}/password-reset/confirm/{uidb64}/{token}/'
+            return HttpResponseRedirect(frontend_confirm_url)
+
+        except DjangoUnicodeDecodeError:
+            # TODO: add custom error page or redirect to frontend error page when created
+            return Response(status=status.HTTP_403_FORBIDDEN)
