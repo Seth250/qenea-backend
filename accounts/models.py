@@ -1,18 +1,24 @@
-from django.db import models
-from .managers import UserManager
-from django.core.mail import send_mail
-from django.utils.translation import gettext_lazy as _
-from django.contrib.auth.models import PermissionsMixin
 from django.contrib.auth.base_user import AbstractBaseUser
-from .validators import validate_username, MAX_USERNAME_LENGTH
+from django.contrib.auth.models import PermissionsMixin
+from django.core.mail import send_mail
+from django.db import models
+from django.utils.translation import gettext_lazy as _
 
+from .managers import UserManager
+from .validators import MAX_USERNAME_LENGTH, validate_username
 
 # Create your models here.
 
 class User(PermissionsMixin, AbstractBaseUser):
     first_name = models.CharField(_('first name'), max_length=25)
     last_name = models.CharField(_('last name'), max_length=25)
-    username = models.CharField(_('username'), max_length=MAX_USERNAME_LENGTH, unique=True, validators=[validate_username])
+    username = models.CharField(
+        _('username'), max_length=MAX_USERNAME_LENGTH,
+        unique=True, validators=[validate_username],
+        error_messages={
+            'unique': _('Oops! This username has been taken, please try another one.')
+        }
+    )
     email = models.EmailField(
         _('email address'),
         unique=True,
