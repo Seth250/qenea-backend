@@ -1,9 +1,13 @@
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core import exceptions as django_exceptions
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_decode
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import serializers
+from rest_framework.exceptions import NotFound, PermissionDenied
 
 User = get_user_model()
 
@@ -92,3 +96,40 @@ class EmailRequestSerializer(serializers.Serializer):
 
         attrs['user'] = user
         return attrs
+
+
+class SetNewPasswordSerializer(serializers.Serializer):
+    uidb64 = serializers.CharField(style={'input_type': 'password', 'placeholder': 'Password'}, write_only=True)
+    token = serializers.CharField(write_only=True)
+    password = serializers.CharField(write_only=True)
+
+    def validate(self, attrs):
+        uidb64 = attrs.get('uidb64')
+        token = attrs.get('token')
+        id_ = force_str(urlsafe_base64_decode(uidb64))
+
+        try:
+            user = User.objects.get(id=id_)
+        except User.DoesNotExist:
+            raise NotFound('No such account exists.')
+
+        if not PasswordResetTokenGenerator().check_token(user, token):
+            raise PermissionDenied('Token is not valid, please request a new one.')
+
+        attrs['user'] = user
+        return attrs
+
+    def validate_password(self, password):
+        try:
+            validate_password(password=password, user=User)
+        except django_exceptions.ValidationError as e:
+            raise serializers.ValidationError(e.messages)
+
+        return password
+
+    def save(self, validated_data):
+        user = validated_data['user']
+        password = validated_data['password']
+        user.set_password(password)
+        user.save()
+        
