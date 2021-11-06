@@ -1,6 +1,5 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
 from django.utils.encoding import smart_bytes
 from django.utils.http import urlsafe_base64_encode
@@ -83,16 +82,15 @@ class RequestPasswordResetEmailAPIView(generics.GenericAPIView):
         if user:
             email = serializer.validated_data['email']
             subject = 'Reset Your Qenea Password'
-            protocol = request.scheme,
-            domain = get_current_site(request=request).domain
-            confirm_url = api_reverse(
+            # we pass request so that reverse can return the absolute url and not just the relative path
+            password_reset_confirm_url = api_reverse(
                 'Accounts_API_v1:password-reset-confirm',
                 kwargs={
                     'uidb64': urlsafe_base64_encode(smart_bytes(user.id)),
                     'token': PasswordResetTokenGenerator().make_token(user)
-                }
+                },
+                request=request
             )
-            password_reset_confirm_url = f'{protocol}://{domain}{confirm_url}'
             context = {
                 'user_firstname': user.first_name,
                 'password_reset_confirm_url': password_reset_confirm_url
