@@ -13,7 +13,7 @@ User = get_user_model()
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(style={'input_type': 'password', 'placeholder': 'Password'}, write_only=True)
+    password = serializers.CharField(style={'input_type': 'password'}, write_only=True)
 
     default_error_messages = {
         'cannot_create_user': _('Unable to create account.')
@@ -99,9 +99,9 @@ class EmailRequestSerializer(serializers.Serializer):
 
 
 class SetNewPasswordSerializer(serializers.Serializer):
-    uidb64 = serializers.CharField(style={'input_type': 'password', 'placeholder': 'Password'}, write_only=True)
+    uidb64 = serializers.CharField(write_only=True)
     token = serializers.CharField(write_only=True)
-    password = serializers.CharField(write_only=True)
+    password = serializers.CharField(style={'input_type': 'password'}, write_only=True)
 
     def validate(self, attrs):
         uidb64 = attrs.get('uidb64')
