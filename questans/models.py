@@ -25,10 +25,11 @@ class Question(models.Model):
     upvotes = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='questions_upvoted')
     downvotes = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='questions_downvoted')
     tags = models.ManyToManyField(Tag, related_name='questions')
-    date_posted = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['-date_posted']
+        ordering = ['-created_at']
 
     def __str__(self):
         return self.title
