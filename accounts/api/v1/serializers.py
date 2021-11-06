@@ -127,9 +127,9 @@ class SetNewPasswordSerializer(serializers.Serializer):
 
         return password
 
-    def save(self, validated_data):
-        user = validated_data['user']
-        password = validated_data['password']
+    def save(self):
+        user = self.validated_data['user']
+        password = self.validated_data['password']
         user.set_password(password)
         user.save()
         
