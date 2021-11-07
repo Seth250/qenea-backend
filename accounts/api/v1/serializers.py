@@ -21,7 +21,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'first_name', 'last_name', 'email', 'username', 'password')
+        fields = ('first_name', 'last_name', 'email', 'username', 'password')
 
     def validate_password(self, password):
         try:
@@ -80,8 +80,8 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'first_name', 'last_name', 'email', 'username')
-        read_only_fields = ('id', 'email')
+        fields = ('first_name', 'last_name', 'email', 'username')
+        read_only_fields = ('email', )
 
 
 class EmailRequestSerializer(serializers.Serializer):
