@@ -13,10 +13,12 @@ class User(PermissionsMixin, AbstractBaseUser):
     first_name = models.CharField(_('first name'), max_length=25)
     last_name = models.CharField(_('last name'), max_length=25)
     username = models.CharField(
-        _('username'), max_length=MAX_USERNAME_LENGTH,
-        unique=True, validators=[validate_username],
+        _('username'),
+        unique=True, 
+        max_length=MAX_USERNAME_LENGTH,
+        validators=[validate_username],
         error_messages={
-            'unique': _('Oops! This username has been taken, please try another one.')
+            'unique': _('This username has been taken, please try another one.')
         }
     )
     email = models.EmailField(
