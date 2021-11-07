@@ -1,4 +1,5 @@
 from rest_framework import generics, permissions, status, views
+from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 
 from profiles.models import Profile
@@ -29,22 +30,24 @@ class ProfileRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
         return Profile.objects.select_related('user').get(user=self.request.user)
 
 
-class FollowToggleProfileAPIView(views.APIView):
+class ProfileFollowToggleAPIView(views.APIView):
     """
     Endpoint for logged in users to follow/unfollow other users
     """
     permission_classes = (permissions.IsAuthenticated, )
 
-    def get_object(self, username):
+    def get_object(self, pk):
         try:
-            return Profile.objects.get(user__username=username)
+            obj = Profile.objects.get(pk=pk)
         except Profile.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+            raise NotFound('Oops! Looks like that user does not exist.')
+
+        return obj
 
     def post(self, request, *args, **kwargs):
         following = True
         user_profile = request.user.profile
-        obj = self.get_object(username=kwargs.get('username'))
+        obj = self.get_object(pk=kwargs.get('pk'))
         # if the user is already being followed, then unfollow
         if user_profile.following.filter(pk=obj.pk).exists():
             user_profile.following.remove(obj)
