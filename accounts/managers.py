@@ -1,5 +1,6 @@
-from profiles.models import Profile
 from django.contrib.auth.base_user import BaseUserManager
+
+from profiles.models import Profile
 
 
 class UserManager(BaseUserManager):
