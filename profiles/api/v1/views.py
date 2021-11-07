@@ -15,7 +15,7 @@ class ProfileDetailAPIView(generics.RetrieveAPIView):
 
     def get_object(self):
         username = self.kwargs['username']
-        return Profile.objects.get(user__username=username)
+        return Profile.objects.select_related('user').get(user__username=username)
 
 
 class ProfileRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
@@ -26,7 +26,7 @@ class ProfileRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
     serializer_class = ProfileSerializer
 
     def get_object(self):
-        return Profile.objects.get(user=self.request.user)
+        return Profile.objects.select_related('user').get(user=self.request.user)
 
 
 class FollowToggleProfileAPIView(views.APIView):
