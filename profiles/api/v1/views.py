@@ -16,7 +16,12 @@ class ProfileDetailAPIView(generics.RetrieveAPIView):
 
     def get_object(self):
         username = self.kwargs['username']
-        return Profile.objects.select_related('user').get(user__username=username)
+        try:
+            profile = Profile.objects.select_related('user').get(user__username=username)
+        except Profile.DoesNotExist:
+            raise NotFound('Oops! Looks like there is no user with that username')
+
+        return profile
 
 
 class ProfileRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
