@@ -2,9 +2,10 @@ from rest_framework import generics, permissions, status, views
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 
+from profiles.messages import Messages
 from profiles.models import Profile
 
-from .serializers import ProfileSerializer
+from .serializers import ProfileFollowSerializer, ProfileSerializer
 
 
 class ProfileDetailAPIView(generics.RetrieveAPIView):
@@ -45,7 +46,7 @@ class ProfileFollowToggleAPIView(views.APIView):
         try:
             obj = Profile.objects.get(pk=pk)
         except Profile.DoesNotExist:
-            raise NotFound('Oops! Looks like that user does not exist.')
+            raise NotFound(Messages.PROFILE_NOT_FOUND_ERROR)
 
         return obj
 
@@ -62,3 +63,39 @@ class ProfileFollowToggleAPIView(views.APIView):
             user_profile.following.add(obj)
 
         return Response(data={'following': following}, status=status.HTTP_200_OK)
+
+
+class ProfileFollowersListAPIView(generics.ListAPIView):
+    """
+    Endpoint for logged in users to list the followers of a user
+    """
+    permission_classes = (permissions.IsAuthenticated, )
+    serializer_class = ProfileFollowSerializer 
+
+
+    def get_queryset(self):
+        pk_ = self.kwargs['pk']
+        try:
+            profile = Profile.objects.get(pk=pk_)
+        except Profile.DoesNotExist:
+            raise NotFound(Messages.PROFILE_NOT_FOUND_ERROR)
+
+        return profile.followers.select_related('user')
+
+
+class ProfileFollowingListAPIView(generics.ListAPIView):
+    """
+    Endpoint for logged in users to view the following-list of a user
+    """
+    permission_classes = (permissions.IsAuthenticated, )
+    serializer_class = ProfileFollowSerializer 
+
+
+    def get_queryset(self):
+        pk_ = self.kwargs['pk']
+        try:
+            profile = Profile.objects.get(pk=pk_)
+        except Profile.DoesNotExist:
+            raise NotFound(Messages.PROFILE_NOT_FOUND_ERROR)
+
+        return profile.following.select_related('user')
