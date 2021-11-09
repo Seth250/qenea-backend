@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.reverse import reverse as api_reverse
 
 from accounts.api.v1.serializers import UserSerializer
 from profiles.models import Profile
@@ -11,7 +12,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Profile
-        fields = ('user', 'bio', 'gender', 'picture', 'following_count', 'followers_count', 'date_of_birth')
+        fields = ('id', 'user', 'bio', 'gender', 'picture', 'following_count', 'followers_count', 'date_of_birth')
 
     def update(self, instance, validated_data):
         user_data = validated_data.pop('user', None)
@@ -30,9 +31,23 @@ class ProfileSerializer(serializers.ModelSerializer):
 
         return instance
 
-    def to_representation(self, instance):
-        ret = super().to_representation(instance)
-        if self.context['request'].method == 'GET':
-            ret['gender_choices'] = instance.GENDER_CHOICES
 
-        return ret
+class ProfileFollowSerializer(serializers.Serializer):
+    user = UserSerializer()
+    profile_url = serializers.SerializerMethodField()
+    follow_toggle_url = serializers.SerializerMethodField()
+    is_followed_by_viewer = serializers.SerializerMethodField()
+
+    def get_profile_url(self, obj):
+        request = self.context['request']
+        return api_reverse('Profiles_API_v1:profile-detail', kwargs={'username': obj.user.username}, request=request)
+
+    def get_follow_toggle_url(self, obj):
+        request = self.context['request']
+        return api_reverse('Profiles_API_v1:follow-toggle', kwargs={'pk': obj.pk}, request=request)
+
+    def get_is_followed_by_viewer(self, obj):
+        user_profile = self.context['request'].user.profile
+        return user_profile.following.filter(pk=obj.pk).exists()
+
+    
