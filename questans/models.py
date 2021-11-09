@@ -38,7 +38,8 @@ class Question(models.Model):
         self.slug = slugify('%s-%s' % (self.title, self.uuid), allow_unicode=True)
         return super(Question, self).save(*args, **kwargs)
 
-    def get_total_points(self):
+    @property
+    def total_points(self):
         return self.upvotes.count() - self.downvotes.count()
 
 
@@ -58,7 +59,8 @@ class Answer(models.Model):
     def __str__(self):
         return f"{self.user}'s answer"
 
-    def get_total_points(self):
+    @property
+    def total_points(self):
         return self.upvotes.count() - self.downvotes.count()
 
 
