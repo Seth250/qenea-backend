@@ -47,6 +47,7 @@ class Answer(models.Model):
     is_accepted = models.BooleanField(default=False)
     upvotes = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='answers_upvoted')
     downvotes = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='answers_downvoted')
+    comments = GenericRelation(Comment)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
