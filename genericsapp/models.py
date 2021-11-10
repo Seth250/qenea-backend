@@ -6,16 +6,6 @@ from django.db import models
 # Create your models here.
 
 
-class Tag(models.Model):
-    name = models.SlugField()
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name='tags')
-    object_id = models.PositiveIntegerField()
-    tagged_object = GenericForeignKey('content_type', 'object_id')
-
-    def __str__(self):
-        return self.name
-
-
 class Comment(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='comments')
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name='comments')

@@ -5,9 +5,16 @@ from django.contrib.contenttypes.fields import GenericRelation
 from django.db import models
 from django.utils.text import slugify
 
-from genericsapp.models import Comment, Tag
+from genericsapp.models import Comment
 
 # Create your models here.
+
+
+class Tag(models.Model):
+    name = models.SlugField()
+
+    def __str__(self):
+        return self.name
 
 
 class Question(models.Model):
@@ -20,7 +27,7 @@ class Question(models.Model):
     description = models.TextField()
     upvotes = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='questions_upvoted')
     downvotes = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='questions_downvoted')
-    tags = GenericRelation(Tag)
+    tags = models.ManyToManyField(Tag, related_name='questions')
     comments = GenericRelation(Comment)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
