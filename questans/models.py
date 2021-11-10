@@ -7,13 +7,6 @@ from django.utils.text import slugify
 # Create your models here.
 
 
-class Tag(models.Model):
-    name = models.SlugField(max_length=30)
-
-    def __str__(self):
-        return self.name
-
-
 class Question(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='questions')
     title = models.CharField(max_length=120)
@@ -24,7 +17,6 @@ class Question(models.Model):
     description = models.TextField()
     upvotes = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='questions_upvoted')
     downvotes = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='questions_downvoted')
-    tags = models.ManyToManyField(Tag, related_name='questions')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -62,6 +54,3 @@ class Answer(models.Model):
     @property
     def total_points(self):
         return self.upvotes.count() - self.downvotes.count()
-
-
-
