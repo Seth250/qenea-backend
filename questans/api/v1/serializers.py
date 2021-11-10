@@ -1,12 +1,14 @@
+from django.db import transaction
+
 from rest_framework import serializers
 
-from questans.models import Question
+from questans.models import Question, Tag
 from questans.validators import validate_tag
 
 
 # so that we can pass a list of strings (valid tag strings) to an object's tags field
 class TagListSerializer(serializers.ListSerializer):
-    child = serializers.SlugField()
+    child = serializers.CharField()
 
     def __init__(self, *args, **kwargs):
         kwargs['allow_empty'] = False
@@ -21,8 +23,25 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
     )
     user = serializers.StringRelatedField()
     total_points = serializers.ReadOnlyField()
+    tags = TagListSerializer()
 
     class Meta:
         model = Question
-        fields = ('url', 'user', 'slug', 'title', 'description', 'total_points', 'created_at', 'updated_at')
+        fields = ('url', 'user', 'slug', 'title', 'description', 'total_points', 'tags', 'created_at', 'updated_at')
 
+    def create(self, validated_data):
+        tags_data = validated_data.pop("tags")
+        instance = Question.objects.create(**validated_data)
+        tag_objects = [Tag.objects.get_or_create(name=tag)[0] for tag in tags_data]
+        instance.tags.set(tag_objects)
+        return instance
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        tags_data = validated_data.pop('tags')
+        instance.title = validated_data.get('title', instance.title)
+        instance.description = validated_data.get('description', instance.description)
+        instance.save()
+        tag_objects = [Tag.objects.get_or_create(name=tag)[0] for tag in tags_data]
+        instance.tags.set(tag_objects)
+        return instance
