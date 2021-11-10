@@ -4,9 +4,8 @@ from questans.models import Question
 
 
 class QuestionSerializer(serializers.HyperlinkedModelSerializer):
-    tags = serializers.SlugRelatedField(many=True, slug_field='name')
-    total_points = serializers.ReadOnlyField(source='get_total_points')
+    total_points = serializers.ReadOnlyField()
 
     class Meta:
         model = Question
-        fields = ('slug', 'title', 'description', 'tags', 'total_points', 'created_at', 'updated_at')
+        fields = ('slug', 'title', 'description', 'total_points', 'created_at', 'updated_at')
