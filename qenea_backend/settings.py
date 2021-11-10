@@ -45,8 +45,7 @@ INSTALLED_APPS = [
 
     'accounts.apps.AccountsConfig',
     'profiles.apps.ProfilesConfig',
-    'questans.apps.QuestansConfig',
-    'genericsapp.apps.GenericsappConfig'
+    'questans.apps.QuestansConfig'
 ]
 
 MIDDLEWARE = [
