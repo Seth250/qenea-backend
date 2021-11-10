@@ -5,7 +5,7 @@ from django.contrib.contenttypes.fields import GenericRelation
 from django.db import models
 from django.utils.text import slugify
 
-from genericsapp.models import Comment
+from comments.models import Comment
 
 # Create your models here.
 
