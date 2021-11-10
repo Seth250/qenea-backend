@@ -44,7 +44,8 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
 
     'accounts.apps.AccountsConfig',
-    'profiles.apps.ProfilesConfig'
+    'profiles.apps.ProfilesConfig',
+    'questans.apps.QuestansConfig'
 ]
 
 MIDDLEWARE = [
