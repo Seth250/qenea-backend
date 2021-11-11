@@ -5,11 +5,11 @@ from django.db import transaction
 from rest_framework import serializers
 from rest_framework.reverse import reverse as api_reverse
 
-from questans.models import Question, Tag
+from questans.models import Answer, Question, Tag
 from questans.validators import validate_tag
 
 
-# so that we can pass a list of strings (valid tag strings) to an object's tags field
+# custom list serializer to enable passing a list of strings (valid tag strings) to an object's tags field
 class TagListSerializer(serializers.ListSerializer):
     child = serializers.CharField()
 
@@ -31,7 +31,7 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Question
-        fields = ('url', 'user', 'slug', 'title', 'description', 'total_points', 'tags', 'created_at', 'updated_at')
+        fields = ('url', 'user', 'slug', 'title', 'description', 'total_points', 'tags', 'comments', 'created_at', 'updated_at')
 
     def create(self, validated_data):
         tags_data: List[str] = validated_data.pop('tags')
@@ -53,3 +53,18 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
     def get_comments_url(self, obj):
         request = self.context['request']
         return api_reverse('Questans_API_v1:question-comments', kwargs={'slug': obj.slug}, request=request)
+
+
+class AnswerSerializer(serializers.HyperlinkedModelSerializer):
+    url = serializers.HyperlinkedIdentityField(view_name='Questans_API_v1:answer-detail')
+    user = serializers.StringRelatedField()
+    question = serializers.HyperlinkedRelatedField(
+        view_name='Questans_API_v1:question-detail',
+        queryset=Question.objects.all(),
+        lookup_field='slug'
+    )
+    total_points = serializers.ReadOnlyField()
+
+    class Meta:
+        model = Answer
+        fields = ('url', 'user', 'question', 'content', 'is_accepted', 'total_points', 'created_at', 'updated_at')
