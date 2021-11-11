@@ -1,6 +1,9 @@
+from typing import List
+
 from django.db import transaction
 
 from rest_framework import serializers
+from rest_framework.reverse import reverse as api_reverse
 
 from questans.models import Question, Tag
 from questans.validators import validate_tag
@@ -24,13 +27,14 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
     user = serializers.StringRelatedField()
     total_points = serializers.ReadOnlyField()
     tags = TagListSerializer()
+    comments = serializers.SerializerMethodField(method_name='get_comments_url')
 
     class Meta:
         model = Question
         fields = ('url', 'user', 'slug', 'title', 'description', 'total_points', 'tags', 'created_at', 'updated_at')
 
     def create(self, validated_data):
-        tags_data = validated_data.pop("tags")
+        tags_data: List[str] = validated_data.pop('tags')
         instance = Question.objects.create(**validated_data)
         tag_objects = [Tag.objects.get_or_create(name=tag)[0] for tag in tags_data]
         instance.tags.set(tag_objects)
@@ -38,10 +42,14 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
 
     @transaction.atomic
     def update(self, instance, validated_data):
-        tags_data = validated_data.pop('tags')
+        tags_data: List[str] = validated_data.pop('tags')
         instance.title = validated_data.get('title', instance.title)
         instance.description = validated_data.get('description', instance.description)
         instance.save()
         tag_objects = [Tag.objects.get_or_create(name=tag)[0] for tag in tags_data]
         instance.tags.set(tag_objects)
         return instance
+
+    def get_comments_url(self, obj):
+        request = self.context['request']
+        return api_reverse('Questans_API_v1:question-comments', kwargs={'slug': obj.slug}, request=request)
