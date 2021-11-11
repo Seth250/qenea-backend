@@ -4,6 +4,8 @@ from rest_framework import permissions, status, views
 from rest_framework.exceptions import APIException, NotFound
 from rest_framework.response import Response
 
+from questans.models import Answer, Question
+
 
 class BaseObjectActionToggleAPIView(views.APIView):
     permission_classes = (permissions.IsAuthenticated, )
@@ -34,7 +36,7 @@ class BaseObjectActionToggleAPIView(views.APIView):
         main_manager, opp_manager = self.get_object_action_managers()
         user = request.user
 
-        # if the user has already performed the main action, then remove it
+        # if the user has already performed this main action, then remove it
         if main_manager.filter(pk=user.id).exists():
             main_manager.remove(user)
         else:
@@ -44,3 +46,37 @@ class BaseObjectActionToggleAPIView(views.APIView):
                 opp_manager.remove(user)
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class QuestionUpvoteToggleAPIView(BaseObjectActionToggleAPIView):
+    """
+    Endpoint for logged in users to add/remove their upvotes to questions
+    """
+    model = Question
+    lookup_field = 'slug'
+    action = 'upvote-toggle'
+
+
+class QuestionDownvoteToggleAPIView(BaseObjectActionToggleAPIView):
+    """
+    Endpoint for logged in users to add/remove their downvotes to questions
+    """
+    model = Question
+    lookup_field = 'slug'
+    action = 'downvote-toggle'
+
+
+class AnswerUpvoteToggleAPIView(BaseObjectActionToggleAPIView):
+    """
+    Endpoint for logged in users to add/remove their upvotes to answers
+    """
+    model = Answer
+    action = 'upvote-toggle'
+
+
+class AnswerDownvoteToggleAPIView(BaseObjectActionToggleAPIView):
+    """
+    Endpoint for logged in users to add/remove their downvotes to answers
+    """
+    model = Answer
+    action = 'downvote-toggle'
