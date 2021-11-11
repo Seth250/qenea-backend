@@ -64,7 +64,12 @@ class AnswerSerializer(serializers.HyperlinkedModelSerializer):
         lookup_field='slug'
     )
     total_points = serializers.ReadOnlyField()
+    comments = serializers.SerializerMethodField(method_name='get_comments_url')
 
     class Meta:
         model = Answer
-        fields = ('url', 'user', 'question', 'content', 'is_accepted', 'total_points', 'created_at', 'updated_at')
+        fields = ('url', 'user', 'question', 'content', 'is_accepted', 'total_points', 'comments', 'created_at', 'updated_at')
+
+    def get_comments_url(self, obj):
+        request = self.context['request']
+        return api_reverse('Questans_API_v1:answer-comments', kwargs={'slug': obj.slug}, request=request)
