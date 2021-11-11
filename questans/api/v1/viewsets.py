@@ -1,12 +1,13 @@
 from rest_framework import permissions, viewsets
 
+from comments.api.v1.mixins import ObjectCommentsViewSetMixin
 from questans.models import Question
 from questans.permissions import IsObjectUserOrReadOnly
 
 from .serializers import QuestionSerializer
 
 
-class QuestionViewSet(viewsets.ModelViewSet):
+class QuestionViewSet(ObjectCommentsViewSetMixin, viewsets.ModelViewSet):
     queryset = Question.objects.select_related('user')
     serializer_class = QuestionSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly, IsObjectUserOrReadOnly)
