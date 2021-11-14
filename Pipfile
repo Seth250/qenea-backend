@@ -11,6 +11,7 @@ python-decouple = "==3.4"
 redis = "==3.5.3"
 celery = {extras = ["redis"], version = "*"}
 flower = "==1.0.0"
+django-cors-headers = "==3.9.0"
 
 [dev-packages]
 isort = "==5.9.3"
