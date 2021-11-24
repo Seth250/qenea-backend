@@ -46,6 +46,13 @@ class Question(models.Model):
     def total_points(self):
         return self.upvotes.count() - self.downvotes.count()
 
+    @property
+    def total_answers(self):
+        return self.answers.count()
+
+    def get_description_summary(self):
+        return f'{self.description[:150]}...'
+
 
 class Answer(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='answers')
