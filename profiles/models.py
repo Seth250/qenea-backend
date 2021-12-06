@@ -2,6 +2,8 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from PIL import Image
+
 # Create your models here.
 
 class Profile(models.Model):
@@ -29,3 +31,13 @@ class Profile(models.Model):
 
     def get_followers_count(self):
         return self.followers.count()
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        img = Image.open(self.picture.path)
+        dimension = 150
+        if img.width > dimension or img.height > dimension:
+            output_size = (dimension, dimension)
+            image = img.resize(output_size, Image.LANCZOS)
+            image.save(self.picture.path, optimize=True)
