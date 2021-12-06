@@ -5,6 +5,7 @@ from django.db import transaction
 from rest_framework import serializers
 from rest_framework.reverse import reverse as api_reverse
 
+from accounts.api.v1.serializers import ObjectUserSerializer
 from questans.models import Answer, Question, Tag
 from questans.validators import validate_tag
 
@@ -24,7 +25,7 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
         view_name='Questans_API_v1:question-detail',
         lookup_field='slug'
     )
-    user = serializers.StringRelatedField()
+    user = ObjectUserSerializer()
     total_points = serializers.ReadOnlyField()
     tags = TagListSerializer()
     comments = serializers.SerializerMethodField(method_name='get_comments_url')
@@ -57,7 +58,7 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
 
 class AnswerSerializer(serializers.HyperlinkedModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name='Questans_API_v1:answer-detail')
-    user = serializers.StringRelatedField()
+    user = ObjectUserSerializer()
     question = serializers.HyperlinkedRelatedField(
         view_name='Questans_API_v1:question-detail',
         queryset=Question.objects.all(),

@@ -84,6 +84,11 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = ('email', )
 
 
+class ObjectUserSerializer(serializers.Serializer):
+    username = serializers.ReadOnlyField()
+    profile_picture = serializers.ImageField(source='profile.picture')
+
+
 class EmailRequestSerializer(serializers.Serializer):
     email = serializers.EmailField(write_only=True)
 
