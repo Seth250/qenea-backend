@@ -52,6 +52,7 @@ class QuestionViewSet(ObjectCommentsViewSetMixin, viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
 
+# TODO: remove list from viewset
 class AnswerViewSet(ObjectCommentsViewSetMixin, viewsets.ModelViewSet):
     queryset = Answer.objects.select_related('user', 'question')
     serializer_class = AnswerSerializer

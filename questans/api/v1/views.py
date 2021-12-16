@@ -1,9 +1,10 @@
 from typing import Literal
 
-from rest_framework import permissions, status, views
+from rest_framework import generics, permissions, status, views
 from rest_framework.exceptions import APIException, NotFound
 from rest_framework.response import Response
 
+from questans.api.v1.serializers import AnswerSerializer
 from questans.models import Answer, Question
 
 
@@ -82,6 +83,18 @@ class AnswerDownvoteToggleAPIView(BaseObjectActionToggleAPIView):
     action = 'downvote-toggle'
 
 
+class QuestionAnswersListAPIView(generics.ListAPIView):
+    seriallizer_class = AnswerSerializer
+
+    def get_queryset(self):
+        try:
+            question = Question.objects.get(slug=self.kwargs['slug'])
+        except:
+            raise NotFound('question does not exist')
+
+        return Answer.objects.filter(question=question).select_related('question', 'user')
+
+
 class AnswerAcceptAPIView(views.APIView):
     # TODO: update properly and add doc string and other stuff
     permission_classes = (permissions.IsAuthenticated, )
@@ -90,7 +103,7 @@ class AnswerAcceptAPIView(views.APIView):
         try:
             instance = Answer.objects.get(pk=self.kwargs['pk'])
         except:
-            raise NotFound('The requested object does not exist.')
+            raise NotFound('answer does not exist.')
 
         return instance
 

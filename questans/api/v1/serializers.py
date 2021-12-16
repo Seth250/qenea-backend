@@ -43,6 +43,7 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
     total_points = serializers.ReadOnlyField()
     total_answers = serializers.ReadOnlyField()
     tags = TagListSerializer()
+    answers = serializers.SerializerMethodField(method='get_answers_url')
     comments = serializers.SerializerMethodField(method_name='get_comments_url')
     is_upvoted_by_viewer = serializers.SerializerMethodField()
     is_downvoted_by_viewer = serializers.SerializerMethodField()
@@ -67,6 +68,10 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
         tag_objects = [Tag.objects.get_or_create(name=tag)[0] for tag in tags_data]
         instance.tags.set(tag_objects)
         return instance
+
+    def get_answers_url(self, obj):
+        request = self.context['request']
+        return api_reverse('Questans_API_v1:question-answers', kwargs={'slug': obj.slug}, request=request)
 
     def get_comments_url(self, obj):
         request = self.context['request']

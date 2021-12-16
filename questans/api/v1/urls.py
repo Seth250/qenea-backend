@@ -12,6 +12,7 @@ app_name = 'Questans_API_v1'
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('questions/<str:slug>/answers/', views.QuestionAnswersListAPIView.as_view(), name='question-answers'),
     path('questions/<str:slug>/upvote-toggle/', views.QuestionUpvoteToggleAPIView.as_view(), name='question-upvote-toggle'),
     path('questions/<str:slug>/downvote-toggle/', views.QuestionDownvoteToggleAPIView.as_view(), name='question-downvote-toggle'),
     path('answers/<int:pk>/upvote-toggle/', views.AnswerUpvoteToggleAPIView.as_view(), name='answer-upvote-toggle'),
