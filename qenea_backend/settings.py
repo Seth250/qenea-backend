@@ -166,13 +166,9 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 
 # EMAIL SETTINGS
-EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
-EMAIL_FILE_PATH = BASE_DIR / 'sent_mails'
-
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-
-# EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST = 'smtp.gmail.com'
 
 EMAIL_PORT = 587
 
@@ -242,3 +238,13 @@ LOGGING = {
     }
 }
 
+
+# local_settings.py contains local development settings and since it is placed at the bottom, it overrides
+# the settings in this file.
+# the local settings file is not committed to source control since it is only used during local development.
+# this approach enables us to have different settings without altering this original production settings file.
+# we can also use this approach to add more settings files like staging_settings, etc.
+try:
+    from .local_settings import *
+except ImportError:
+    pass
