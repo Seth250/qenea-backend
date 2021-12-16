@@ -7,8 +7,8 @@ from profiles.models import Profile
 
 class ProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer()
-    following_count = serializers.IntegerField(source='get_following_count', read_only=True)
-    followers_count = serializers.IntegerField(source='get_followers_count', read_only=True)
+    following_count = serializers.ReadOnlyField(source='get_following_count')
+    followers_count = serializers.ReadOnlyField(source='get_followers_count')
 
     class Meta:
         model = Profile
@@ -34,6 +34,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 class ProfileFollowSerializer(serializers.Serializer):
     user = UserSerializer()
+    picture = serializers.ImageField()
     profile_url = serializers.SerializerMethodField()
     follow_toggle_url = serializers.SerializerMethodField()
     is_followed_by_viewer = serializers.SerializerMethodField()
@@ -49,5 +50,3 @@ class ProfileFollowSerializer(serializers.Serializer):
     def get_is_followed_by_viewer(self, obj):
         user_profile = self.context['request'].user.profile
         return user_profile.following.filter(pk=obj.pk).exists()
-
-    

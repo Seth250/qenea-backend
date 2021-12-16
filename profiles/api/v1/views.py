@@ -70,8 +70,7 @@ class ProfileFollowersListAPIView(generics.ListAPIView):
     Endpoint for logged in users to list the followers of a user
     """
     permission_classes = (permissions.IsAuthenticated, )
-    serializer_class = ProfileFollowSerializer 
-
+    serializer_class = ProfileFollowSerializer
 
     def get_queryset(self):
         pk_ = self.kwargs['pk']
@@ -88,8 +87,7 @@ class ProfileFollowingListAPIView(generics.ListAPIView):
     Endpoint for logged in users to view the following-list of a user
     """
     permission_classes = (permissions.IsAuthenticated, )
-    serializer_class = ProfileFollowSerializer 
-
+    serializer_class = ProfileFollowSerializer
 
     def get_queryset(self):
         pk_ = self.kwargs['pk']

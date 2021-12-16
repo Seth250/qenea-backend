@@ -4,7 +4,8 @@ from comments.api.v1.mixins import ObjectCommentsViewSetMixin
 from questans.models import Answer, Question
 from questans.permissions import IsObjectUserOrReadOnly
 
-from .serializers import AnswerSerializer, QuestionSerializer
+from .serializers import (AnswerSerializer, QuestionListSerializer,
+                          QuestionSerializer)
 
 
 class QuestionViewSet(ObjectCommentsViewSetMixin, viewsets.ModelViewSet):
@@ -17,6 +18,7 @@ class QuestionViewSet(ObjectCommentsViewSetMixin, viewsets.ModelViewSet):
         """
         Endpoint that provides users (unauthenticated or authenticated) with list action for Question
         """
+        self.serializer_class = QuestionListSerializer
         return super().list(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):

@@ -54,7 +54,7 @@ class ObtainAuthTokenAPIView(views.APIView):
         token, _ = Token.objects.get_or_create(user=user)
         data = {
             'auth_token': token.key,
-            'email': user.email
+            'username': user.username
         }
         return Response(data=data, status=status.HTTP_200_OK)
 
