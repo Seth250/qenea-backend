@@ -74,11 +74,17 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
 
     def get_is_upvoted_by_viewer(self, obj):
         user = self.context['request'].user
-        return obj.upvotes.filter(pk=user.pk).exists()
+        if user.is_authenticated:
+            return obj.upvotes.filter(pk=user.pk).exists()
+
+        return False
 
     def get_is_downvoted_by_viewer(self, obj):
         user = self.context['request'].user
-        return obj.downvotes.filter(pk=user.pk).exists()
+        if user.is_authenticated:
+            return obj.downvotes.filter(pk=user.pk).exists()
+
+        return False
 
 
 class AnswerSerializer(serializers.HyperlinkedModelSerializer):
@@ -104,8 +110,14 @@ class AnswerSerializer(serializers.HyperlinkedModelSerializer):
 
     def get_is_upvoted_by_viewer(self, obj):
         user = self.context['request'].user
-        return obj.upvotes.filter(pk=user.pk).exists()
+        if user.is_authenticated:
+            return obj.upvotes.filter(pk=user.pk).exists()
+        
+        return False
 
     def get_is_downvoted_by_viewer(self, obj):
         user = self.context['request'].user
-        return obj.downvotes.filter(pk=user.pk).exists()
+        if user.is_authenticated:
+            return obj.downvotes.filter(pk=user.pk).exists()
+
+        return False

@@ -15,5 +15,6 @@ urlpatterns = [
     path('questions/<str:slug>/upvote-toggle/', views.QuestionUpvoteToggleAPIView.as_view(), name='question-upvote-toggle'),
     path('questions/<str:slug>/downvote-toggle/', views.QuestionDownvoteToggleAPIView.as_view(), name='question-downvote-toggle'),
     path('answers/<int:pk>/upvote-toggle/', views.AnswerUpvoteToggleAPIView.as_view(), name='answer-upvote-toggle'),
-    path('answers/<int:pk>/downvote-toggle/', views.AnswerDownvoteToggleAPIView.as_view(), name='answer-downvote-toggle')
+    path('answers/<int:pk>/downvote-toggle/', views.AnswerDownvoteToggleAPIView.as_view(), name='answer-downvote-toggle'),
+    path('answers/<int:pk>/accept/', views.AnswerAcceptAPIView.as_view())
 ]

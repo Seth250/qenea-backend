@@ -80,3 +80,22 @@ class AnswerDownvoteToggleAPIView(BaseObjectActionToggleAPIView):
     """
     model = Answer
     action = 'downvote-toggle'
+
+
+class AnswerAcceptAPIView(views.APIView):
+    # TODO: update properly and add doc string and other stuff
+    permission_classes = (permissions.IsAuthenticated, )
+
+    def get_object(self):
+        try:
+            instance = Answer.objects.get(pk=self.kwargs['pk'])
+        except:
+            raise NotFound('The requested object does not exist.')
+
+        return instance
+
+    def post(self, request, *args, **kwargs):
+        obj = self.get_object()
+        obj.is_accepted = True
+        obj.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
