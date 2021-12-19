@@ -1,7 +1,8 @@
 from typing import Literal
 
 from rest_framework import generics, permissions, status, views
-from rest_framework.exceptions import APIException, NotFound
+from rest_framework.decorators import permission_classes
+from rest_framework.exceptions import APIException, NotFound, PermissionDenied
 from rest_framework.response import Response
 
 from questans.api.v1.serializers import AnswerSerializer
@@ -84,7 +85,11 @@ class AnswerDownvoteToggleAPIView(BaseObjectActionToggleAPIView):
 
 
 class QuestionAnswersListAPIView(generics.ListAPIView):
-    seriallizer_class = AnswerSerializer
+    """
+    Endpoint that provides users (unauthenticated or authenticated) with list action for a question's answers
+    """
+    permission_classes = (permissions.AllowAny, )
+    serializer_class = AnswerSerializer
 
     def get_queryset(self):
         try:
@@ -92,11 +97,13 @@ class QuestionAnswersListAPIView(generics.ListAPIView):
         except:
             raise NotFound('question does not exist')
 
-        return Answer.objects.filter(question=question).select_related('question', 'user')
+        return Answer.objects.select_related('question', 'user').filter(question=question)
 
 
-class AnswerAcceptAPIView(views.APIView):
-    # TODO: update properly and add doc string and other stuff
+class AnswerAcceptToggleAPIView(views.APIView):
+    """
+    Endpoint for the question owner to accept or un-accept an answer
+    """
     permission_classes = (permissions.IsAuthenticated, )
 
     def get_object(self):
@@ -109,6 +116,17 @@ class AnswerAcceptAPIView(views.APIView):
 
     def post(self, request, *args, **kwargs):
         obj = self.get_object()
-        obj.is_accepted = True
+        question = obj.question
+        # if the question owner is not the same as the current logged in user
+        if question.user != request.user:
+            raise PermissionDenied
+
+        qs = question.answers.exclude(pk=obj.pk).filter(is_accepted=True)
+        if qs.exists():
+            prev_accepted_answer = qs.first()
+            prev_accepted_answer.is_accepted = False
+            prev_accepted_answer.save()
+
+        obj.is_accepted = not obj.is_accepted
         obj.save()
         return Response(status=status.HTTP_204_NO_CONTENT)

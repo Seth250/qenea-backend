@@ -9,11 +9,9 @@ from accounts.api.v1.serializers import ObjectUserSerializer
 from questans.models import Answer, Question, Tag
 from questans.validators import validate_tag
 
-# TODO: probably remove hyperlinkedserializer stuff and just use id or slug
 
 # custom list serializer to enable passing a list of strings (valid tag strings) to an object's tags field
 class TagListSerializer(serializers.ListSerializer):
-    # child = serializers.CharField()
     child = serializers.SlugField()
 
     def __init__(self, *args, **kwargs):
@@ -43,15 +41,16 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
     total_points = serializers.ReadOnlyField()
     total_answers = serializers.ReadOnlyField()
     tags = TagListSerializer()
-    answers = serializers.SerializerMethodField(method='get_answers_url')
+    answers = serializers.SerializerMethodField(method_name='get_answers_url')
     comments = serializers.SerializerMethodField(method_name='get_comments_url')
     is_upvoted_by_viewer = serializers.SerializerMethodField()
     is_downvoted_by_viewer = serializers.SerializerMethodField()
 
     class Meta:
         model = Question
-        fields = ('url', 'user', 'slug', 'title', 'description', 'total_points', 'total_answers', 'tags', 'comments', 'created_at', 'updated_at', 'is_upvoted_by_viewer', 'is_downvoted_by_viewer')
+        fields = ('url', 'user', 'slug', 'title', 'description', 'total_points', 'total_answers', 'tags', 'answers', 'comments', 'created_at', 'updated_at', 'is_upvoted_by_viewer', 'is_downvoted_by_viewer')
 
+    @transaction.atomic
     def create(self, validated_data):
         tags_data: List[str] = validated_data.pop('tags')
         instance = Question.objects.create(**validated_data)
@@ -94,12 +93,8 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
 
 class AnswerSerializer(serializers.HyperlinkedModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name='Questans_API_v1:answer-detail')
-    user = ObjectUserSerializer()
-    question = serializers.HyperlinkedRelatedField(
-        view_name='Questans_API_v1:question-detail',
-        queryset=Question.objects.all(),
-        lookup_field='slug'
-    )
+    user = ObjectUserSerializer(read_only=True)
+    question = serializers.SlugRelatedField(slug_field='slug', queryset=Question.objects.all())
     total_points = serializers.ReadOnlyField()
     comments = serializers.SerializerMethodField(method_name='get_comments_url')
     is_upvoted_by_viewer = serializers.SerializerMethodField()
@@ -111,7 +106,7 @@ class AnswerSerializer(serializers.HyperlinkedModelSerializer):
 
     def get_comments_url(self, obj):
         request = self.context['request']
-        return api_reverse('Questans_API_v1:answer-comments', kwargs={'slug': obj.slug}, request=request)
+        return api_reverse('Questans_API_v1:answer-comments', kwargs={'pk': obj.pk}, request=request)
 
     def get_is_upvoted_by_viewer(self, obj):
         user = self.context['request'].user

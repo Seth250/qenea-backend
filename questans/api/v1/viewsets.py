@@ -1,4 +1,4 @@
-from rest_framework import permissions, viewsets
+from rest_framework import mixins, permissions, viewsets
 
 from comments.api.v1.mixins import ObjectCommentsViewSetMixin
 from questans.models import Answer, Question
@@ -52,17 +52,14 @@ class QuestionViewSet(ObjectCommentsViewSetMixin, viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
 
-# TODO: remove list from viewset
-class AnswerViewSet(ObjectCommentsViewSetMixin, viewsets.ModelViewSet):
+class AnswerViewSet(ObjectCommentsViewSetMixin, mixins.CreateModelMixin,
+                                                mixins.RetrieveModelMixin,
+                                                mixins.UpdateModelMixin,
+                                                mixins.DestroyModelMixin,
+                                                viewsets.GenericViewSet):
     queryset = Answer.objects.select_related('user', 'question')
     serializer_class = AnswerSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly, IsObjectUserOrReadOnly)
-
-    def list(self, request, *args, **kwargs):
-        """
-        Endpoint that provides users (unauthenticated or authenticated) with list action for Answer
-        """
-        return super().list(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
         """
