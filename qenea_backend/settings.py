@@ -43,7 +43,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
-    'drf_yasg',
+    'drf_spectacular',
+    'drf_spectacular_sidecar', # required for django collectstatic discovery (offline access)
 
     'accounts.apps.AccountsConfig',
     'profiles.apps.ProfilesConfig',
@@ -110,7 +111,9 @@ REST_FRAMEWORK = {
     # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
 
     # to make page size (number of results returned) dynamic
-    'DEFAULT_PAGINATION_CLASS': 'qenea_backend.pagination.DefaultPageNumberPagination'
+    'DEFAULT_PAGINATION_CLASS': 'qenea_backend.pagination.DefaultPageNumberPagination',
+
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema'
 }
 
 
@@ -193,6 +196,28 @@ CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_RESULT_SERIALIZER = 'json'
 
 CELERY_TASK_SERIALIZER = 'json'
+
+
+# DRF_SPECTACULAR SETTINGS
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Qenea API Documentation',
+    'DESCRIPTION': 'Qenea (pronounced Q and A) is a question and answer application',
+    'TOS': 'https://www.google.com/policies/terms/',
+    'CONTACT': {
+        'email': 'ayowaleakintayo@gmail.com'
+    },
+    'LICENSE': {
+        'name': 'MIT License'
+    },
+    'VERSION': '1.0.0',
+
+    'SWAGGER_UI_DIST': 'SIDECAR', 
+    'SWAGGER_UI_FAVICON_HREF': 'SIDECAR', 
+    'REDOC_DIST': 'SIDECAR',
+
+    'SCHEMA_PATH_PREFIX': '/api/v[0-9]',
+    'SERVE_PERMISSIONS': ['rest_framework.permissions.IsAdminUser'],
+}
 
 
 # FRONTEND SETTINGS

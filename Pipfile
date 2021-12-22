@@ -13,6 +13,7 @@ celery = {extras = ["redis"], version = "*"}
 flower = "==1.0.0"
 django-cors-headers = "==3.9.0"
 readtime = "==1.1.1"
+drf-spectacular = {version = "==0.21.1", extras = ["sidecar"]}
 
 [dev-packages]
 isort = "==5.9.3"
