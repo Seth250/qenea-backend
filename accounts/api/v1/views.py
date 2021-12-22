@@ -7,6 +7,7 @@ from django.utils.encoding import (DjangoUnicodeDecodeError, smart_bytes,
                                    smart_str)
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 
+from drf_spectacular.utils import extend_schema
 from rest_framework import generics, permissions, status, views
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
@@ -65,6 +66,7 @@ class AuthTokenDestroyAPIView(views.APIView):
     """
     permission_classes = (permissions.IsAuthenticated, )
 
+    @extend_schema(request=None, responses=None) # for schema warnings when view has no serializer
     def post(self, request, *args, **kwargs):
         request.user.auth_token.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -114,6 +116,7 @@ class PasswordResetConfirmAPIView(views.APIView):
     """
     permission_classes = (permissions.AllowAny, )
 
+    @extend_schema(request=None, responses=None)
     def get(self, request, *args, **kwargs):
         try:
             uidb64 = kwargs['uidb64']

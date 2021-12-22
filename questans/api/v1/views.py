@@ -1,7 +1,8 @@
 from typing import Literal
 
+from drf_spectacular.utils import extend_schema
 from rest_framework import generics, permissions, status, views
-from rest_framework.exceptions import APIException, NotFound, PermissionDenied
+from rest_framework.exceptions import APIException, NotFound
 from rest_framework.response import Response
 
 from questans.api.v1.serializers import AnswerSerializer
@@ -34,6 +35,7 @@ class BaseObjectActionToggleAPIView(views.APIView):
 
         raise APIException
 
+    @extend_schema(request=None, responses=None)
     def post(self, request, *args, **kwargs):
         main_manager, opp_manager = self.get_object_action_managers()
         user = request.user
@@ -47,7 +49,7 @@ class BaseObjectActionToggleAPIView(views.APIView):
             if opp_manager.filter(pk=user.id).exists():
                 opp_manager.remove(user)
 
-        return Response({'message': 'ok'}, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class QuestionUpvoteToggleAPIView(BaseObjectActionToggleAPIView):
@@ -114,6 +116,7 @@ class AnswerAcceptToggleAPIView(views.APIView):
 
         return instance
 
+    @extend_schema(request=None, responses=None)
     def post(self, request, *args, **kwargs):
         obj = self.get_object()
 

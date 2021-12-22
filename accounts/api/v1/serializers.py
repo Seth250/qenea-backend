@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -8,6 +10,8 @@ from django.utils.translation import gettext_lazy as _
 
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, PermissionDenied
+
+logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
@@ -37,7 +41,8 @@ class UserCreateSerializer(serializers.ModelSerializer):
         try:
             user = User.objects.create_user(**validated_data)
             # NOTE: the profile is created in the manager
-        except:
+        except Exception as e:
+            logger.error(e)
             self.fail('cannot_create_user')
             
         return user
@@ -53,6 +58,14 @@ class AuthTokenSerializer(serializers.Serializer):
         style={'input_type': 'password'},
         trim_whitespace=False,
         write_only=True
+    )
+    auth_token = serializers.CharField(
+        label=_('Auth Token'),
+        read_only=True
+    )
+    username = serializers.CharField(
+        label=_('Username'),
+        read_only=True
     )
 
     default_error_messages = {
