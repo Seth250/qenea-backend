@@ -5,6 +5,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from .managers import UserManager
+from .messages import Messages
 from .validators import MAX_USERNAME_LENGTH, validate_username
 
 # Create your models here.
@@ -18,14 +19,14 @@ class User(PermissionsMixin, AbstractBaseUser):
         max_length=MAX_USERNAME_LENGTH,
         validators=[validate_username],
         error_messages={
-            'unique': _('This username has been taken, please try another one.')
+            'unique': Messages.NON_UNIQUE_USERNAME
         }
     )
     email = models.EmailField(
         _('email address'),
         unique=True,
         error_messages={
-            'unique': _('A user with this email already exists.')
+            'unique': Messages.NON_UNIQUE_EMAIL
         }
     )
     date_joined = models.DateTimeField(_('date joined'), auto_now_add=True)
