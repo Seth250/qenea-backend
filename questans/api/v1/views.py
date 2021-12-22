@@ -1,24 +1,24 @@
 from typing import Literal
 
 from rest_framework import generics, permissions, status, views
-from rest_framework.decorators import permission_classes
 from rest_framework.exceptions import APIException, NotFound, PermissionDenied
 from rest_framework.response import Response
 
 from questans.api.v1.serializers import AnswerSerializer
 from questans.models import Answer, Question
+from questans.permissions import IsObjectUser
 
 
 class BaseObjectActionToggleAPIView(views.APIView):
     permission_classes = (permissions.IsAuthenticated, )
     model = None
     lookup_field: Literal['pk', 'slug'] = 'pk'
-    action: Literal['upvote-toggle', 'downvote-toggle']
+    view_action: Literal['upvote-toggle', 'downvote-toggle']
 
     def get_object(self):
         try:
             lookup_kwarg = {self.lookup_field: self.kwargs.get(self.lookup_field)}
-            instance = self.model.objects.get(**lookup_kwarg)
+            instance = self.model.objects.select_related('user').get(**lookup_kwarg)
         except:
             raise NotFound('The requested object does not exist.')
 
@@ -26,11 +26,11 @@ class BaseObjectActionToggleAPIView(views.APIView):
 
     def get_object_action_managers(self):
         obj = self.get_object()
-        if self.action == 'upvote-toggle':
-            return obj.upvotes, obj.downvotes
+        if self.view_action == 'upvote-toggle':
+            return (obj.upvotes, obj.downvotes)
 
-        elif self.action == 'downvote-toggle':
-            return obj.downvotes, obj.upvotes
+        elif self.view_action == 'downvote-toggle':
+            return (obj.downvotes, obj.upvotes)
 
         raise APIException
 
@@ -47,7 +47,7 @@ class BaseObjectActionToggleAPIView(views.APIView):
             if opp_manager.filter(pk=user.id).exists():
                 opp_manager.remove(user)
 
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({'message': 'ok'}, status=status.HTTP_200_OK)
 
 
 class QuestionUpvoteToggleAPIView(BaseObjectActionToggleAPIView):
@@ -56,7 +56,7 @@ class QuestionUpvoteToggleAPIView(BaseObjectActionToggleAPIView):
     """
     model = Question
     lookup_field = 'slug'
-    action = 'upvote-toggle'
+    view_action = 'upvote-toggle'
 
 
 class QuestionDownvoteToggleAPIView(BaseObjectActionToggleAPIView):
@@ -65,7 +65,7 @@ class QuestionDownvoteToggleAPIView(BaseObjectActionToggleAPIView):
     """
     model = Question
     lookup_field = 'slug'
-    action = 'downvote-toggle'
+    view_action = 'downvote-toggle'
 
 
 class AnswerUpvoteToggleAPIView(BaseObjectActionToggleAPIView):
@@ -73,7 +73,7 @@ class AnswerUpvoteToggleAPIView(BaseObjectActionToggleAPIView):
     Endpoint for logged in users to add/remove their upvotes to answers
     """
     model = Answer
-    action = 'upvote-toggle'
+    view_action = 'upvote-toggle'
 
 
 class AnswerDownvoteToggleAPIView(BaseObjectActionToggleAPIView):
@@ -81,7 +81,7 @@ class AnswerDownvoteToggleAPIView(BaseObjectActionToggleAPIView):
     Endpoint for logged in users to add/remove their downvotes to answers
     """
     model = Answer
-    action = 'downvote-toggle'
+    view_action = 'downvote-toggle'
 
 
 class QuestionAnswersListAPIView(generics.ListAPIView):
@@ -104,7 +104,7 @@ class AnswerAcceptToggleAPIView(views.APIView):
     """
     Endpoint for the question owner to accept or un-accept an answer
     """
-    permission_classes = (permissions.IsAuthenticated, )
+    permission_classes = (IsObjectUser, )
 
     def get_object(self):
         try:
@@ -116,12 +116,8 @@ class AnswerAcceptToggleAPIView(views.APIView):
 
     def post(self, request, *args, **kwargs):
         obj = self.get_object()
-        question = obj.question
-        # if the question owner is not the same as the current logged in user
-        if question.user != request.user:
-            raise PermissionDenied
 
-        qs = question.answers.exclude(pk=obj.pk).filter(is_accepted=True)
+        qs = obj.question.answers.exclude(pk=obj.pk).filter(is_accepted=True)
         if qs.exists():
             prev_accepted_answer = qs.first()
             prev_accepted_answer.is_accepted = False

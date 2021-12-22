@@ -91,8 +91,7 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
         return False
 
 
-class AnswerSerializer(serializers.HyperlinkedModelSerializer):
-    url = serializers.HyperlinkedIdentityField(view_name='Questans_API_v1:answer-detail')
+class AnswerSerializer(serializers.ModelSerializer):
     user = ObjectUserSerializer(read_only=True)
     question = serializers.SlugRelatedField(slug_field='slug', queryset=Question.objects.all())
     total_points = serializers.ReadOnlyField()
@@ -102,7 +101,8 @@ class AnswerSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Answer
-        fields = ('url', 'user', 'question', 'content', 'is_accepted', 'total_points', 'comments', 'created_at', 'updated_at', 'is_upvoted_by_viewer', 'is_downvoted_by_viewer')
+        fields = ('id', 'user', 'question', 'content', 'is_accepted', 'total_points', 'comments', 'created_at', 'updated_at', 'is_upvoted_by_viewer', 'is_downvoted_by_viewer')
+        read_only_fields = ('id', 'is_accepted')
 
     def get_comments_url(self, obj):
         request = self.context['request']
