@@ -1,16 +1,18 @@
 import re
-from django.core.validators import RegexValidator
-from django.core.exceptions import ValidationError
-from django.utils.translation import gettext_lazy as _, ngettext_lazy
 
+from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
+from django.utils.translation import gettext_lazy as _
+from django.utils.translation import ngettext_lazy
 
 MIN_USERNAME_LENGTH = 4
 MAX_USERNAME_LENGTH = 25
 
 regex_username_validator = RegexValidator(
-    regex=r'^[a-zA-Z0-9_]*$',
-    message=_('Username can only contain letters, numbers or underscore.')
+    regex=r'^[a-z0-9_][a-z0-9_.]*[a-z0-9_]$',
+    message=_('Username must start and end with lowercase letters, number or underscore but can contain period.')
 )
+
 
 def validate_username(value):
     if len(value) < MIN_USERNAME_LENGTH:
