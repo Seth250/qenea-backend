@@ -1,17 +1,16 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.http.response import HttpResponseRedirect
 from django.template.loader import render_to_string
 from django.utils.encoding import (DjangoUnicodeDecodeError, smart_bytes,
                                    smart_str)
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.utils.safestring import mark_safe
 
 from drf_spectacular.utils import extend_schema
 from rest_framework import generics, permissions, status, views
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
-from rest_framework.reverse import reverse as api_reverse
 
 from accounts.tasks import send_email
 
@@ -66,7 +65,7 @@ class AuthTokenDestroyAPIView(views.APIView):
     """
     permission_classes = (permissions.IsAuthenticated, )
 
-    @extend_schema(request=None, responses=None) # for schema warnings when view has no serializer
+    @extend_schema(request=None, responses={'204': None}) # for schema warnings since view has no serializer
     def post(self, request, *args, **kwargs):
         request.user.auth_token.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -87,18 +86,12 @@ class RequestPasswordResetEmailAPIView(generics.GenericAPIView):
         if user:
             email = serializer.validated_data['email']
             subject = 'Reset Your Qenea Password'
-            # we pass request so that reverse can return the absolute url and not just the relative path
-            password_reset_confirm_url = api_reverse(
-                'Accounts_API_v1:password-reset-confirm',
-                kwargs={
-                    'uidb64': urlsafe_base64_encode(smart_bytes(user.id)),
-                    'token': PasswordResetTokenGenerator().make_token(user)
-                },
-                request=request
-            )
+            uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
+            token = PasswordResetTokenGenerator().make_token(user)
+            frontend_confirm_url = f'{settings.BASE_FRONTEND_URL}/password-reset/confirm/?u={uidb64}&t={token}'
             context = {
                 'user_firstname': user.first_name,
-                'password_reset_confirm_url': password_reset_confirm_url
+                'password_reset_confirm_url': mark_safe(frontend_confirm_url) # prevents ampersand(&) from being html encoded as &amp;
             }
             html_content = render_to_string('accounts/password_reset_email.html', context=context, request=request)
             text_content = render_to_string('accounts/password_reset_email.txt', context=context, request=request)
@@ -106,17 +99,19 @@ class RequestPasswordResetEmailAPIView(generics.GenericAPIView):
             # .delay() makes the celery task run in the background
             send_email.delay(subject=subject, body=text_content, to=email, html_content=html_content)
 
-        msg = 'If an account exists, you would receive an email with further instructions.'
-        return Response(data={'message': msg}, status=status.HTTP_200_OK)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
 class PasswordResetConfirmAPIView(views.APIView):
     """
-    Endpoint to ensure that uidb64 and token are valid
+    Endpoint to check whether uidb64 and token from the frontend are valid (they would also be
+    checked in the /complete request).
+
+    The frontend would only show the password reset form if both are valid
     """
     permission_classes = (permissions.AllowAny, )
 
-    @extend_schema(request=None, responses=None)
+    @extend_schema(request=None, responses={'204': None})
     def get(self, request, *args, **kwargs):
         try:
             uidb64 = kwargs['uidb64']
@@ -125,14 +120,11 @@ class PasswordResetConfirmAPIView(views.APIView):
             user = User.objects.get(id=id_)
 
             if not PasswordResetTokenGenerator().check_token(user=user, token=token): # if token has already been used
-                # TODO: add custom error page or redirect to frontend error page when created
                 return Response(status=status.HTTP_403_FORBIDDEN)
 
-            frontend_confirm_url = f'{settings.BASE_FRONTEND_URL}/password-reset/confirm/{uidb64}/{token}/'
-            return HttpResponseRedirect(frontend_confirm_url)
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
         except DjangoUnicodeDecodeError:
-            # TODO: add custom error page or redirect to frontend error page when created
             return Response(status=status.HTTP_403_FORBIDDEN)
 
 
@@ -147,4 +139,4 @@ class SetNewPasswordAPIView(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({'message': 'Password has been reset successfully!'}, status=status.HTTP_200_OK)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
