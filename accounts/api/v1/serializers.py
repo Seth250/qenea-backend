@@ -11,6 +11,8 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, PermissionDenied
 
+from accounts.messages import Messages
+
 logger = logging.getLogger(__name__)
 
 User = get_user_model()
@@ -98,12 +100,16 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class ObjectUserSerializer(serializers.Serializer):
-    username = serializers.ReadOnlyField()
+    username = serializers.CharField(read_only=True)
     profile_picture = serializers.ImageField(source='profile.picture')
 
 
 class EmailRequestSerializer(serializers.Serializer):
     email = serializers.EmailField(write_only=True)
+    message = serializers.CharField(
+        read_only=True,
+        default='If an account exists, you would receive an email with further instructions.'
+    )
 
     def validate(self, attrs):
         email = attrs.get('email')
@@ -120,6 +126,7 @@ class SetNewPasswordSerializer(serializers.Serializer):
     uidb64 = serializers.CharField(write_only=True)
     token = serializers.CharField(write_only=True)
     password = serializers.CharField(style={'input_type': 'password'}, write_only=True)
+    message = serializers.CharField(read_only=True, default='Password has been reset successfully!')
 
     def validate(self, attrs):
         uidb64 = attrs.get('uidb64')
@@ -129,10 +136,10 @@ class SetNewPasswordSerializer(serializers.Serializer):
         try:
             user = User.objects.get(id=id_)
         except User.DoesNotExist:
-            raise NotFound('No such account exists.')
+            raise NotFound('Could not find a matching account.')
 
         if not PasswordResetTokenGenerator().check_token(user, token):
-            raise PermissionDenied('Token is not valid, please request a new one.')
+            raise PermissionDenied(Messages.INVALID_TOKEN)
 
         attrs['user'] = user
         return attrs
