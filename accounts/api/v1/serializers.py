@@ -10,15 +10,50 @@ from django.utils.translation import gettext_lazy as _
 
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, PermissionDenied
+from rest_framework.validators import UniqueValidator
 
 from accounts.messages import Messages
+from accounts.validators import (MAX_USERNAME_LENGTH, MIN_USERNAME_LENGTH,
+                                 regex_username_validator)
 
 logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
 
+class SerializerUsernameField(serializers.CharField):
+    """
+    Custom serializer field for case insensitive username validation
+    """
+    default_error_messages = {
+        'non_unique': Messages.NON_UNIQUE_USERNAME
+    }
+
+    def __init__(self, **kwargs):
+        kwargs['min_length'] = MIN_USERNAME_LENGTH
+        kwargs['max_length'] = MAX_USERNAME_LENGTH
+        super().__init__(**kwargs)
+
+    def run_validation(self, data=...):
+        qs = User.objects.all()
+        try:
+            # retrieving the request object here since it's not present in __init__
+            request = self.context['request']
+            # if it is an update method, the username of the current user is excluded from the unique validation
+            # this is done so as to prevent unique constraint errors when the username isn't changed (or when
+            # only the casing is changed)
+            if request.method == 'PUT' or request.method == 'PATCH':
+                qs = qs.exclude(pk=request.user.id)
+        except:
+            pass
+
+        unique_validator = UniqueValidator(queryset=qs, message=self.error_messages['non_unique'], lookup='iexact')
+        self.validators.extend([unique_validator, regex_username_validator])
+        return super().run_validation(data=data)
+
+
 class UserCreateSerializer(serializers.ModelSerializer):
+    username = SerializerUsernameField() # overriding the default with our custom field
     password = serializers.CharField(style={'input_type': 'password'}, write_only=True)
 
     default_error_messages = {
@@ -92,6 +127,7 @@ class AuthTokenSerializer(serializers.Serializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    username = SerializerUsernameField()
 
     class Meta:
         model = User
