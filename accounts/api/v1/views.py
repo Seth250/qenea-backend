@@ -15,7 +15,8 @@ from rest_framework.response import Response
 from accounts.tasks import send_email
 
 from .serializers import (AuthTokenSerializer, EmailRequestSerializer,
-                          SetNewPasswordSerializer, UserCreateSerializer)
+                          SetNewPasswordSerializer, UserCreateSerializer,
+                          UsernameValidateSerializer)
 
 User = get_user_model()
 
@@ -68,6 +69,20 @@ class AuthTokenDestroyAPIView(views.APIView):
     @extend_schema(request=None, responses={'204': None}) # for schema warnings since view has no serializer
     def post(self, request, *args, **kwargs):
         request.user.auth_token.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class UsernameValidateAPIView(views.APIView):
+    """
+    Dedicated endpoint to validate username
+    """
+    permission_classes = (permissions.AllowAny, )
+    serializer_class = UsernameValidateSerializer
+
+    def get(self, request, *args, **kwargs):
+        data = {'username': kwargs['username']}
+        serializer = self.serializer_class(data=data)
+        serializer.is_valid(raise_exception=True)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

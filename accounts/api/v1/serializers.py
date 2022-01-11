@@ -140,6 +140,10 @@ class ObjectUserSerializer(serializers.Serializer):
     profile_picture = serializers.ImageField(source='profile.picture')
 
 
+class UsernameValidateSerializer(serializers.Serializer):
+    username = SerializerUsernameField(write_only=True)
+
+
 class EmailRequestSerializer(serializers.Serializer):
     email = serializers.EmailField(write_only=True)
     message = serializers.CharField(
