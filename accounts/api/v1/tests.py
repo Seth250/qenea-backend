@@ -1,10 +1,11 @@
 from django.contrib.auth import get_user_model
-from rest_framework import status
-from rest_framework.test import APITestCase, APIClient
-from rest_framework.reverse import reverse as api_reverse
 
+from rest_framework import status
+from rest_framework.reverse import reverse as api_reverse
+from rest_framework.test import APIClient, APITestCase
 
 User = get_user_model()
+
 
 class AccountsAPITestCase(APITestCase):
 
@@ -35,6 +36,7 @@ class AccountsAPITestCase(APITestCase):
     def test_create_superuser(self):
         User.objects.create_superuser(**self.test_create_user_data)
         test_superuser = User.objects.get(email=self.test_create_user_data['email'])
+        self.assertTrue(test_superuser.id)
         self.assertEqual(test_superuser.first_name, self.test_create_user_data['first_name'])
         self.assertEqual(test_superuser.last_name, self.test_create_user_data['last_name'])
         self.assertEqual(test_superuser.username, self.test_create_user_data['username'])
@@ -50,7 +52,7 @@ class AccountsAPITestCase(APITestCase):
         self.assertEqual(test_response.status_code, status.HTTP_201_CREATED)
         test_response_data = test_response.data
         test_user = User.objects.get(email=self.test_create_user_data['email'])
-        self.assertEqual(test_user.id, test_response_data['id'])
+        self.assertTrue(test_user.id)
         self.assertEqual(test_user.first_name, self.test_create_user_data['first_name'])
         self.assertEqual(test_user.first_name, test_response_data['first_name'])
         self.assertEqual(test_user.last_name, self.test_create_user_data['last_name'])
@@ -91,3 +93,43 @@ class AccountsAPITestCase(APITestCase):
         self.assertEqual(test_response.status_code, status.HTTP_204_NO_CONTENT)
         test_user = User.objects.get(email=self.test_create_user_data['email'])
         self.assertFalse(hasattr(test_user, 'auth_token'))
+
+    def test_validate_username(self):
+        url_reverse_name = 'Accounts_API_v1:username-validate'
+        # usernames can contain lowercase and uppercase letters
+        test_username = 'TestUsername'
+        test_response = self.client.get(path=api_reverse(url_reverse_name, kwargs={'username': test_username}))
+        self.assertEqual(test_response.status_code, status.HTTP_204_NO_CONTENT)
+        # usernames can contain period (it must not start or end with it though)
+        test_username = 'test.username'
+        test_response = self.client.get(path=api_reverse(url_reverse_name, kwargs={'username': test_username}))
+        self.assertEqual(test_response.status_code, status.HTTP_204_NO_CONTENT)
+        # usernames can contain underscores
+        test_username = '_test_username'
+        test_response = self.client.get(path=api_reverse(url_reverse_name, kwargs={'username': test_username}))
+        self.assertEqual(test_response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_validate_username_with_invalid_data(self):
+        url_reverse_name = 'Accounts_API_v1:username-validate'
+        # usernames cannot have less than 3 characters
+        test_username = 'te'
+        test_response = self.client.get(path=api_reverse(url_reverse_name, kwargs={'username': test_username}))
+        self.assertEqual(test_response.status_code, status.HTTP_400_BAD_REQUEST)
+        # usernames cannot have more than 25 characters
+        test_username = 't' * 26
+        test_response = self.client.get(path=api_reverse(url_reverse_name, kwargs={'username': test_username}))
+        self.assertEqual(test_response.status_code, status.HTTP_400_BAD_REQUEST)
+        # usernames cannot contain hypens and special characters
+        test_username = 'test-username'
+        test_response = self.client.get(path=api_reverse(url_reverse_name, kwargs={'username': test_username}))
+        self.assertEqual(test_response.status_code, status.HTTP_400_BAD_REQUEST)
+        test_username = 'test@username'
+        test_response = self.client.get(path=api_reverse(url_reverse_name, kwargs={'username': test_username}))
+        self.assertEqual(test_response.status_code, status.HTTP_400_BAD_REQUEST)
+        # username must not start or end with period (but it can contain it)
+        test_username = '.testusername'
+        test_response = self.client.get(path=api_reverse(url_reverse_name, kwargs={'username': test_username}))
+        self.assertEqual(test_response.status_code, status.HTTP_400_BAD_REQUEST)
+        test_username = 'testusername.'
+        test_response = self.client.get(path=api_reverse(url_reverse_name, kwargs={'username': test_username}))
+        self.assertEqual(test_response.status_code, status.HTTP_400_BAD_REQUEST)
