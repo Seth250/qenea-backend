@@ -64,7 +64,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
         model = User
         fields = ('first_name', 'last_name', 'email', 'username', 'password')
 
-    def validate_password(self, password):
+    def validate_password(self, password: str):
         try:
             validate_password(password=password, user=User)
         except django_exceptions.ValidationError as e:

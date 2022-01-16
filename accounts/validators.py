@@ -14,7 +14,7 @@ regex_username_validator = RegexValidator(
 )
 
 
-def validate_username(value):
+def validate_username(value: str):
     if len(value) < MIN_USERNAME_LENGTH:
         raise ValidationError(
             _('Username must have more than %(min_length)s characters.'),

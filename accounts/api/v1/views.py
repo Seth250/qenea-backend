@@ -79,6 +79,7 @@ class UsernameValidateAPIView(views.APIView):
     permission_classes = (permissions.AllowAny, )
     serializer_class = UsernameValidateSerializer
 
+    @extend_schema(responses={'204': None})
     def get(self, request, *args, **kwargs):
         data = {'username': kwargs['username']}
         serializer = self.serializer_class(data=data)
