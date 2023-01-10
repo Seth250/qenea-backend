@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+  web:
+    build:
+      context: .
+    restart: unless-stopped
+    container_name: qenea-backend
+    ports:
+      - ${WEB_PORT}:8000
+    depends_on:
+      - rabbitmq
+      - redis
+
+  rabbitmq:
+    image: rabbitmq:${RABBITMQ_VERSION}
+    container_name: rabbitmq
+    restart: always
+    ports:
+     - 5672:5672
+
+  redis:
+    image: redis:${REDIS_VERSION}
+    container_name: redis-server
+    restart: always
+    ports:
+      - 6379:6379
+
+  celery:
+    build:
+      context: .
+    container_name: celery-worker
+    command: celery -A qenea_backend worker -l INFO --uid=nobody --gid=nogroup
+    restart: unless-stopped
+    depends_on:
+      - rabbitmq
+      - redis
+      - web

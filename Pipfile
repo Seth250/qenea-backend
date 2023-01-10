@@ -14,6 +14,8 @@ flower = "==1.0.0"
 django-cors-headers = "==3.9.0"
 readtime = "==1.1.1"
 drf-spectacular = {version = "==0.21.1", extras = ["sidecar"]}
+gunicorn = "==20.1.0"
+uvicorn = "==0.20.0"
 
 [dev-packages]
 isort = "==5.9.3"

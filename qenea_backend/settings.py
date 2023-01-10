@@ -90,6 +90,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'qenea_backend.wsgi.application'
 
+ASGI_APPLICATION = 'qenea_backend.asgi.application'
+
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
@@ -193,9 +195,9 @@ DEFAULT_FROM_EMAIL = 'Qenea <noreply@qenea.com>'
 
 
 # CELERY SETTINGS
-CELERY_BROKER_URL = 'amqp://localhost'
+CELERY_BROKER_URL = 'amqp://guest:guest@rabbitmq'
 
-CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+CELERY_RESULT_BACKEND = 'redis://redis:6379'
 
 CELERY_ACCEPT_CONTENT = ['application/json']
 
@@ -246,16 +248,12 @@ LOGGING = {
         }
     },
     'handlers': {
-        'null': {
-            'level': 'DEBUG',
-            'class': 'logging.NullHandler'
-        },
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'formatter': 'verbose',
-            'filename': 'debug.log'
-        },
+        # 'file': {
+        #     'level': 'DEBUG',
+        #     'class': 'logging.FileHandler',
+        #     'formatter': 'verbose',
+        #     'filename': 'debug.log'
+        # },
         'console': {
             'level': 'INFO',
             'class': 'logging.StreamHandler',
@@ -263,10 +261,10 @@ LOGGING = {
         }
     },
     'loggers': {
-        '': {
+        'root': {
             'level': config('DJANGO_LOG_LEVEL', default='INFO'),
-            'handlers': ['console', 'file'],
-            'propagate': True
+            'handlers': ['console'],
+            'propagate': False
         }
     }
 }
