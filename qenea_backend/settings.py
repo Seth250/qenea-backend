@@ -248,16 +248,12 @@ LOGGING = {
         }
     },
     'handlers': {
-        'null': {
-            'level': 'DEBUG',
-            'class': 'logging.NullHandler'
-        },
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'formatter': 'verbose',
-            'filename': 'debug.log'
-        },
+        # 'file': {
+        #     'level': 'DEBUG',
+        #     'class': 'logging.FileHandler',
+        #     'formatter': 'verbose',
+        #     'filename': 'debug.log'
+        # },
         'console': {
             'level': 'INFO',
             'class': 'logging.StreamHandler',
@@ -265,10 +261,10 @@ LOGGING = {
         }
     },
     'loggers': {
-        '': {
+        'root': {
             'level': config('DJANGO_LOG_LEVEL', default='INFO'),
-            'handlers': ['console', 'file'],
-            'propagate': True
+            'handlers': ['console'],
+            'propagate': False
         }
     }
 }
