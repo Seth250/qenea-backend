@@ -193,9 +193,9 @@ DEFAULT_FROM_EMAIL = 'Qenea <noreply@qenea.com>'
 
 
 # CELERY SETTINGS
-CELERY_BROKER_URL = 'amqp://localhost'
+CELERY_BROKER_URL = 'amqp://guest:guest@rabbitmq'
 
-CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+CELERY_RESULT_BACKEND = 'redis://redis:6379'
 
 CELERY_ACCEPT_CONTENT = ['application/json']
 
