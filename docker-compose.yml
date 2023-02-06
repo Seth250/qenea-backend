@@ -6,11 +6,25 @@ services:
       context: .
     restart: unless-stopped
     container_name: qenea-backend
+    volumes:
+      - static_volume:${STATIC_ROOT}
     ports:
       - ${WEB_PORT}:8000
     depends_on:
       - rabbitmq
       - redis
+
+  nginx:
+    build:
+      context: ./nginx
+    restart: always
+    container_name: nginx
+    volumes:
+      - static_volume:${STATIC_ROOT}
+    ports:
+      - 80:80
+    depends_on:
+      - web
 
   rabbitmq:
     image: rabbitmq:${RABBITMQ_VERSION}
@@ -36,3 +50,6 @@ services:
       - rabbitmq
       - redis
       - web
+
+volumes:
+  static_volume:
