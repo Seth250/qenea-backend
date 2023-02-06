@@ -219,8 +219,8 @@ SPECTACULAR_SETTINGS = {
     },
     'VERSION': '1.0.0',
 
-    'SWAGGER_UI_DIST': 'SIDECAR', 
-    'SWAGGER_UI_FAVICON_HREF': 'SIDECAR', 
+    'SWAGGER_UI_DIST': 'SIDECAR',
+    'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
     'REDOC_DIST': 'SIDECAR',
 
     'SCHEMA_PATH_PREFIX': '/api/v[0-9]',
@@ -248,12 +248,12 @@ LOGGING = {
         }
     },
     'handlers': {
-        # 'file': {
-        #     'level': 'DEBUG',
-        #     'class': 'logging.FileHandler',
-        #     'formatter': 'verbose',
-        #     'filename': 'debug.log'
-        # },
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'formatter': 'verbose',
+            'filename': 'debug.log'
+        },
         'console': {
             'level': 'INFO',
             'class': 'logging.StreamHandler',
@@ -263,7 +263,7 @@ LOGGING = {
     'loggers': {
         'root': {
             'level': config('DJANGO_LOG_LEVEL', default='INFO'),
-            'handlers': ['console'],
+            'handlers': ['console', 'file'],
             'propagate': False
         }
     }

@@ -7,18 +7,17 @@ LABEL maintainer="ayowaleakintayo@gmail.com"
 ENV PYTHONDONTWRITEBYTECODE 1
 # non-empty value ensures python output (stdout, stderr) is sent to the terminal without buffering
 ENV PYTHONUNBUFFERED 1
-# Tell pipenv to create venv in the current directory
+# tell pipenv to create venv in the current directory
 ENV PIPENV_VENV_IN_PROJECT 1
 
 # set working directory
 WORKDIR /app
 
-# copy pipfiles first to working directory (also helps cache the layer)
+# copy pipfiles first to working directory (helps cache the layer)
 COPY Pipfile Pipfile.lock ./
 
-RUN pip install pipenv
-
 # install dependencies
+RUN pip install pipenv
 RUN pipenv install --system --deploy
 
 # copy project to working directory
@@ -29,7 +28,14 @@ RUN python manage.py collectstatic --noinput
 
 EXPOSE 8000
 
-# chmod +x changes a file mode to executable
-RUN chmod +x ./run.sh
+# create custom non-root user and group
+RUN useradd -U --no-create-home app
+# change the project owner and group to the one created (helps prevent permission errors)
+RUN chown -R app:app ./
 
-CMD ["./run.sh"]
+USER app
+
+# chmod +x changes file mode to executable (the -R flag makes it run recursively on a directory)
+RUN chmod -R +x ./scripts
+
+CMD ["./scripts/run.sh"]

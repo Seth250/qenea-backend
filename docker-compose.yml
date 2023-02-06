@@ -30,7 +30,7 @@ services:
     build:
       context: .
     container_name: celery-worker
-    command: celery -A qenea_backend worker -l INFO --uid=nobody --gid=nogroup
+    command: celery -A qenea_backend worker -l INFO
     restart: unless-stopped
     depends_on:
       - rabbitmq
